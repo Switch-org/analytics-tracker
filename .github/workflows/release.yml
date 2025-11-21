@@ -74,14 +74,6 @@ jobs:
           echo "✅ npm authentication successful"
           npm whoami
 
-      - name: Debug: Show recent commits
-        run: |
-          echo "📝 Recent commits:"
-          git log --oneline -10
-          echo ""
-          echo "🔍 Checking for conventional commits:"
-          git log --format="%s" -10 | grep -E "^(feat|fix|perf|revert|docs|style|chore|refactor|test|build|ci)(\(.+\))?:" || echo "⚠️  No conventional commits found in last 10 commits"
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
