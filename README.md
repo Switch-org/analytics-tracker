@@ -626,6 +626,7 @@ MIT © [Switch Org](https://github.com/switch-org)
 - 🐛 Issues: [GitHub Issues](https://github.com/switch-org/analytics-tracker/issues)
 - 📖 Documentation: See the [docs/](./docs) directory for comprehensive guides
 
+
 --- -->
 
 Made with ❤️ by ATIF RAFIQUE
