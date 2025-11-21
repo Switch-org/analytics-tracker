@@ -1,3 +1,11 @@
+# [1.1.0](https://github.com/switch-org/analytics-tracker/compare/v1.0.0...v1.1.0) (2025-11-21)
+
+
+### Features
+
+* test cases and added public ip tracking ([2af5fb2](https://github.com/switch-org/analytics-tracker/commit/2af5fb2c4198501f7d8900af97f0ab5bf9afcf37))
+* update ip tracking if browser geolocation is undefined ([d1869d6](https://github.com/switch-org/analytics-tracker/commit/d1869d62e0f3221e88fc6493993ba18a9b4cf0b6))
+
 # 1.0.0 (2025-11-21)
 
 
