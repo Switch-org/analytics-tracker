@@ -1,3 +1,17 @@
+# 1.0.0 (2025-11-21)
+
+
+### Bug Fixes
+
+* update workflows and configuration ([910f610](https://github.com/switch-org/analytics-tracker/commit/910f610c7a740ce49e3b3cce0d681c07ad3cb2dd))
+* update workflows and configuration ([5eb48cb](https://github.com/switch-org/analytics-tracker/commit/5eb48cb38cdee415d8a20b83f0a34705230bd4f2))
+
+
+### Features
+
+* update workflows ([14586fd](https://github.com/switch-org/analytics-tracker/commit/14586fd7be5eb67a0aeb68fbe2d5b2d4de736aad))
+* update workflows ([0dae885](https://github.com/switch-org/analytics-tracker/commit/0dae8858b0fba63523f1ea999132aaacb66482a2))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -21,4 +35,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive test suite
 
 [Unreleased]: https://github.com/switch-org/analytics-tracker
-
