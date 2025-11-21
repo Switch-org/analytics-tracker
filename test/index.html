@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Tracker - Event Tracking Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 6px;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #444;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button.secondary {
+      background: #6c757d;
+    }
+    button.secondary:hover {
+      background: #545b62;
+    }
+    button.success {
+      background: #28a745;
+    }
+    button.success:hover {
+      background: #218838;
+    }
+    button.danger {
+      background: #dc3545;
+    }
+    button.danger:hover {
+      background: #c82333;
+    }
+    input {
+      padding: 8px 12px;
+      margin: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 200px;
+    }
+    .logs {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 6px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+    .log-entry {
+      margin: 8px 0;
+      padding: 8px;
+      background: #252526;
+      border-left: 3px solid #007bff;
+      border-radius: 3px;
+    }
+    .log-entry.success {
+      border-left-color: #28a745;
+    }
+    .log-entry.error {
+      border-left-color: #dc3545;
+    }
+    .info {
+      background: #e7f3ff;
+      border-left: 4px solid #007bff;
+      padding: 12px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .endpoint-config {
+      margin: 20px 0;
+    }
+    .endpoint-config input {
+      width: 400px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Analytics Tracker - Event Tracking Test</h1>
+    <p class="subtitle">Test Firebase/GA-style event tracking functionality</p>
+
+    <div class="info">
+      <strong>Endpoint Configuration:</strong>
+      <div class="endpoint-config">
+        <input 
+          type="text" 
+          id="endpointInput" 
+          placeholder="https://your-api.com/analytics" 
+          value="http://localhost:3000/api/analytics"
+        >
+        <button onclick="updateEndpoint()">Update Endpoint</button>
+      </div>
+      <p>Default: <code>http://localhost:3000/api/analytics</code></p>
+      <p><strong>Note:</strong> You can use <a href="https://webhook.site" target="_blank">webhook.site</a> to get a test endpoint URL.</p>
+    </div>
+
+    <div class="section">
+      <h2>1. Page View Tracking</h2>
+      <p>Track page views automatically or manually</p>
+      <button onclick="trackPageView()">Track Page View</button>
+      <button onclick="trackPageViewCustom()">Track Custom Page View</button>
+    </div>
+
+    <div class="section">
+      <h2>2. Custom Events</h2>
+      <p>Track different types of user interactions</p>
+      <button onclick="trackButtonClick()">Track Button Click</button>
+      <button onclick="trackPurchase()">Track Purchase</button>
+      <button onclick="trackSignUp()">Track Sign Up</button>
+      <button onclick="trackAddToCart()">Track Add to Cart</button>
+      <button onclick="trackSearch()">Track Search</button>
+      <button onclick="trackCustomEvent()">Track Custom Event</button>
+    </div>
+
+    <div class="section">
+      <h2>3. E-commerce Events</h2>
+      <p>Test e-commerce specific events</p>
+      <button onclick="trackBeginCheckout()">Begin Checkout</button>
+      <button onclick="trackPurchaseComplete()">Complete Purchase</button>
+      <button onclick="trackViewItem()">View Item</button>
+    </div>
+
+    <div class="section">
+      <h2>4. User Engagement Events</h2>
+      <p>Track user engagement and interactions</p>
+      <button onclick="trackVideoPlay()">Video Play</button>
+      <button onclick="trackShare()">Share Content</button>
+      <button onclick="trackTutorialComplete()">Tutorial Complete</button>
+    </div>
+
+    <div class="section">
+      <h2>5. Event Logs</h2>
+      <button class="secondary" onclick="clearLogs()">Clear Logs</button>
+      <button class="secondary" onclick="viewLastEvent()">View Last Event Data</button>
+      <div id="logs" class="logs">
+        <div class="log-entry">Ready to track events. Click any button above to start testing.</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Import the analytics tracker
+    // In a real app, you would import from '@atif910/analytics-tracker'
+    // For testing, we'll use a dynamic import from the dist folder
+    import { AnalyticsService } from '../dist/index.esm.js';
+
+    // Configure the endpoint
+    const endpointInput = document.getElementById('endpointInput');
+    let currentEndpoint = endpointInput.value;
+
+    window.updateEndpoint = function() {
+      currentEndpoint = endpointInput.value || 'http://localhost:3000/api/analytics';
+      AnalyticsService.configure({ apiEndpoint: currentEndpoint });
+      addLog(`✅ Endpoint updated to: ${currentEndpoint}`, 'success');
+    };
+
+    // Initialize with default endpoint
+    AnalyticsService.configure({ apiEndpoint: currentEndpoint });
+
+    let lastEvent = null;
+
+    // Helper to add logs
+    function addLog(message, type = 'info') {
+      const logs = document.getElementById('logs');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      logs.insertBefore(entry, logs.firstChild);
+    }
+
+    // Helper to track events and log
+    async function trackEventHelper(eventName, parameters, description) {
+      try {
+        addLog(`📤 Sending: ${description}...`, 'info');
+        lastEvent = { eventName, parameters, timestamp: new Date() };
+        await AnalyticsService.logEvent(eventName, parameters);
+        addLog(`✅ Success: ${description}`, 'success');
+        addLog(`   Event: ${eventName} | Params: ${JSON.stringify(parameters)}`, 'info');
+      } catch (error) {
+        addLog(`❌ Error: ${description} - ${error.message}`, 'error');
+        console.error('Event tracking error:', error);
+      }
+    }
+
+    // Page view tracking
+    window.trackPageView = async function() {
+      await trackEventHelper(
+        'page_view',
+        { page_title: document.title },
+        'Page View (auto)'
+      );
+    };
+
+    window.trackPageViewCustom = async function() {
+      await trackEventHelper(
+        'page_view',
+        {
+          page_name: '/custom-page',
+          page_title: 'Custom Page',
+          user_type: 'premium'
+        },
+        'Page View (custom)'
+      );
+    };
+
+    // Custom events
+    window.trackButtonClick = async function() {
+      await trackEventHelper(
+        'button_click',
+        {
+          button_name: 'signup',
+          button_location: 'header',
+          button_color: 'blue'
+        },
+        'Button Click'
+      );
+    };
+
+    window.trackPurchase = async function() {
+      await trackEventHelper(
+        'purchase',
+        {
+          transaction_id: `T${Date.now()}`,
+          value: 29.99,
+          currency: 'USD',
+          items: [
+            { id: 'item1', name: 'Product 1', price: 29.99, quantity: 1 }
+          ]
+        },
+        'Purchase'
+      );
+    };
+
+    window.trackSignUp = async function() {
+      await trackEventHelper(
+        'sign_up',
+        {
+          method: 'email',
+          plan: 'premium'
+        },
+        'Sign Up'
+      );
+    };
+
+    window.trackAddToCart = async function() {
+      await trackEventHelper(
+        'add_to_cart',
+        {
+          item_id: 'SKU123',
+          item_name: 'Test Product',
+          price: 19.99,
+          quantity: 2,
+          currency: 'USD'
+        },
+        'Add to Cart'
+      );
+    };
+
+    window.trackSearch = async function() {
+      await trackEventHelper(
+        'search',
+        {
+          search_term: 'laptop',
+          results_count: 25
+        },
+        'Search'
+      );
+    };
+
+    window.trackCustomEvent = async function() {
+      const eventName = prompt('Enter event name:', 'custom_event');
+      if (!eventName) return;
+      
+      const paramsInput = prompt('Enter parameters as JSON (or leave empty):', '{"key": "value"}');
+      let params = {};
+      if (paramsInput) {
+        try {
+          params = JSON.parse(paramsInput);
+        } catch (e) {
+          alert('Invalid JSON. Using empty parameters.');
+        }
+      }
+
+      await trackEventHelper(eventName, params, `Custom Event: ${eventName}`);
+    };
+
+    // E-commerce events
+    window.trackBeginCheckout = async function() {
+      await trackEventHelper(
+        'begin_checkout',
+        {
+          value: 59.98,
+          currency: 'USD',
+          items: [
+            { id: 'item1', name: 'Product 1', price: 29.99 },
+            { id: 'item2', name: 'Product 2', price: 29.99 }
+          ]
+        },
+        'Begin Checkout'
+      );
+    };
+
+    window.trackPurchaseComplete = async function() {
+      await trackEventHelper(
+        'purchase',
+        {
+          transaction_id: `T${Date.now()}`,
+          value: 99.99,
+          currency: 'USD',
+          payment_type: 'credit_card',
+          items: [
+            { id: 'item1', name: 'Product 1', price: 49.99, quantity: 2 }
+          ]
+        },
+        'Purchase Complete'
+      );
+    };
+
+    window.trackViewItem = async function() {
+      await trackEventHelper(
+        'view_item',
+        {
+          item_id: 'SKU456',
+          item_name: 'Featured Product',
+          price: 39.99,
+          currency: 'USD',
+          category: 'Electronics'
+        },
+        'View Item'
+      );
+    };
+
+    // User engagement events
+    window.trackVideoPlay = async function() {
+      await trackEventHelper(
+        'video_play',
+        {
+          video_id: 'vid123',
+          video_title: 'Introduction Video',
+          video_duration: 120
+        },
+        'Video Play'
+      );
+    };
+
+    window.trackShare = async function() {
+      await trackEventHelper(
+        'share',
+        {
+          content_type: 'article',
+          item_id: 'article123',
+          method: 'twitter'
+        },
+        'Share Content'
+      );
+    };
+
+    window.trackTutorialComplete = async function() {
+      await trackEventHelper(
+        'tutorial_complete',
+        {
+          tutorial_name: 'Getting Started',
+          completion_percentage: 100
+        },
+        'Tutorial Complete'
+      );
+    };
+
+    // Utility functions
+    window.clearLogs = function() {
+      document.getElementById('logs').innerHTML = '';
+      addLog('Logs cleared', 'info');
+    };
+
+    window.viewLastEvent = function() {
+      if (!lastEvent) {
+        alert('No events tracked yet. Click a button to track an event first.');
+        return;
+      }
+      alert(`Last Event:\n\nEvent Name: ${lastEvent.eventName}\n\nParameters:\n${JSON.stringify(lastEvent.parameters, null, 2)}\n\nTimestamp: ${lastEvent.timestamp}`);
+    };
+
+    // Add initial log
+    addLog('🚀 Analytics Tracker initialized', 'success');
+    addLog(`📡 Endpoint: ${currentEndpoint}`, 'info');
+  </script>
+</body>
+</html>
+
