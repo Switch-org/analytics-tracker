@@ -628,5 +628,4 @@ MIT © [Switch Org](https://github.com/switch-org)
 
 ---
 
-Made with ❤️ by Switch Org
-
+Made with ❤️ by ATIF RAFIQUE
