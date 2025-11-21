@@ -198,6 +198,107 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
     [sessionId, networkInfo, deviceInfo, location, attribution]
   );
 
+  /**
+   * Track a custom event (Firebase/GA-style)
+   * Automatically uses current session context
+   * 
+   * @param eventName - Name of the event (e.g., 'button_click', 'purchase')
+   * @param parameters - Event-specific parameters (optional)
+   * 
+   * @example
+   * ```tsx
+   * const { trackEvent } = useAnalytics();
+   * 
+   * // Track button click
+   * trackEvent('button_click', { 
+   *   button_name: 'signup',
+   *   button_location: 'header' 
+   * });
+   * 
+   * // Track purchase
+   * trackEvent('purchase', {
+   *   transaction_id: 'T12345',
+   *   value: 29.99,
+   *   currency: 'USD'
+   * });
+   * ```
+   */
+  const trackEvent = useCallback(
+    async (eventName: string, parameters?: Record<string, any>) => {
+      // Wait for context to be available
+      if (!sessionId || !networkInfo || !deviceInfo) {
+        // If context not ready, still track but with auto-collected context
+        await AnalyticsService.logEvent(eventName, parameters);
+        return;
+      }
+
+      // Use hook context for more accurate tracking
+      await AnalyticsService.logEvent(eventName, parameters, {
+        sessionId,
+        pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+        networkInfo,
+        deviceInfo,
+        location: location ?? undefined,
+        attribution: attribution ?? undefined,
+        userId: sessionId,
+      });
+
+      setInteractions((prev) => prev + 1);
+    },
+    [sessionId, networkInfo, deviceInfo, location, attribution]
+  );
+
+  /**
+   * Track a page view event (Firebase/GA-style)
+   * Automatically uses current session context
+   * 
+   * @param pageName - Optional page name (defaults to current pathname)
+   * @param parameters - Optional page view parameters
+   * 
+   * @example
+   * ```tsx
+   * const { trackPageView } = useAnalytics();
+   * 
+   * // Track current page
+   * trackPageView();
+   * 
+   * // Track with custom name
+   * trackPageView('/dashboard', {
+   *   page_title: 'Dashboard',
+   *   user_type: 'premium'
+   * });
+   * ```
+   */
+  const trackPageView = useCallback(
+    async (pageName?: string, parameters?: Record<string, any>) => {
+      // Wait for context to be available
+      if (!sessionId || !networkInfo || !deviceInfo) {
+        // If context not ready, still track but with auto-collected context
+        await AnalyticsService.trackPageView(pageName, parameters);
+        return;
+      }
+
+      // Use hook context for more accurate tracking
+      const page = pageName || (typeof window !== 'undefined' ? window.location.pathname : '');
+      await AnalyticsService.logEvent('page_view', {
+        page_name: page,
+        page_title: typeof document !== 'undefined' ? document.title : undefined,
+        ...parameters,
+      }, {
+        sessionId,
+        pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+        networkInfo,
+        deviceInfo,
+        location: location ?? undefined,
+        attribution: attribution ?? undefined,
+        userId: sessionId,
+      });
+
+      setInteractions((prev) => prev + 1);
+    },
+    [sessionId, networkInfo, deviceInfo, location, attribution]
+  );
+
   const incrementInteraction = useCallback(() => {
     setInteractions((n) => n + 1);
   }, []);
@@ -212,6 +313,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
       pageVisits, // Used in return
       interactions, // Used in return
       logEvent,
+      trackEvent,
+      trackPageView,
       incrementInteraction,
       refresh,
     }),
@@ -224,6 +327,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
       pageVisits,
       interactions,
       logEvent,
+      trackEvent,
+      trackPageView,
       incrementInteraction,
       refresh,
     ]

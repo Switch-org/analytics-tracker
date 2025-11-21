@@ -108,6 +108,9 @@ export interface AnalyticsEvent {
   userId?: string;
   customData?: Record<string, any>;
   eventId?: string;
+  // Firebase/GA-like event tracking
+  eventName?: string; // e.g., 'page_view', 'button_click', 'purchase'
+  eventParameters?: Record<string, any>; // Event-specific parameters
 }
 
 export interface UseAnalyticsReturn {
@@ -119,6 +122,9 @@ export interface UseAnalyticsReturn {
   pageVisits: number;
   interactions: number;
   logEvent: (customData?: Record<string, any>) => Promise<void>;
+  // Firebase/GA-like event tracking
+  trackEvent: (eventName: string, parameters?: Record<string, any>) => Promise<void>;
+  trackPageView: (pageName?: string, parameters?: Record<string, any>) => Promise<void>;
   incrementInteraction: () => void;
   refresh: () => Promise<{
     net: NetworkInfo;
