@@ -41,6 +41,251 @@ pnpm add @atif910/analytics-tracker react react-dom
 npm list @atif910/analytics-tracker
 ```
 
+## 🔒 Self-Hosted Analytics - Configure Your Backend URL
+
+**All analytics data is sent to YOUR backend server** - no third-party servers involved. You have complete control over your data.
+
+### Why Configure Your Own Backend?
+
+- ✅ **Data Privacy**: Your analytics data never leaves your servers
+- ✅ **Full Control**: You own and control all analytics data
+- ✅ **No Third-Party Tracking**: No external services involved
+- ✅ **GDPR Compliant**: Complete control over data storage and processing
+- ✅ **Custom Integration**: Integrate with your existing database and tools
+
+### How to Configure Your Backend URL
+
+You can configure your backend URL using the `apiEndpoint` option in three ways:
+
+#### 1. Full URL (Recommended for Production)
+
+Use a complete URL pointing to your backend server:
+
+```tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function App() {
+  const analytics = useAnalytics({
+    config: {
+      // Point to your own backend server
+      apiEndpoint: 'https://api.yourcompany.com/analytics',
+    },
+  });
+}
+```
+
+**When to use:**
+- ✅ Production deployments
+- ✅ Separate backend server
+- ✅ Microservices architecture
+- ✅ Multiple domains
+
+**Examples:**
+```tsx
+// Standard HTTPS endpoint
+apiEndpoint: 'https://api.yourcompany.com/analytics'
+
+// Custom port
+apiEndpoint: 'https://api.yourcompany.com:8080/analytics'
+
+// Subdomain
+apiEndpoint: 'https://analytics.yourcompany.com/track'
+
+// Custom path
+apiEndpoint: 'https://api.yourcompany.com/v1/analytics/track'
+```
+
+#### 2. Relative Path (Same Domain)
+
+Use a relative path if your API is on the same domain as your frontend:
+
+```tsx
+const analytics = useAnalytics({
+  config: {
+    // Sends to: https://yourdomain.com/api/analytics
+    apiEndpoint: '/api/analytics',
+  },
+});
+```
+
+**When to use:**
+- ✅ Same domain for frontend and backend
+- ✅ Next.js API routes
+- ✅ Same-origin API endpoints
+- ✅ Development environment
+
+**Examples:**
+```tsx
+// Standard API route
+apiEndpoint: '/api/analytics'
+
+// Custom path
+apiEndpoint: '/api/v1/analytics'
+
+// With query params (for auth tokens, etc.)
+apiEndpoint: '/api/analytics?key=your-api-key'
+```
+
+#### 3. Environment Variables (Best Practice)
+
+Use environment variables for different environments:
+
+```tsx
+const analytics = useAnalytics({
+  config: {
+    apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+  },
+});
+```
+
+**Setup environment variables:**
+
+**Create React App:**
+```bash
+# .env.development
+REACT_APP_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+
+# .env.production
+REACT_APP_ANALYTICS_API=https://api.yourcompany.com/analytics
+```
+
+**Next.js:**
+```bash
+# .env.local (development)
+NEXT_PUBLIC_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+
+# .env.production
+NEXT_PUBLIC_ANALYTICS_API=https://api.yourcompany.com/analytics
+```
+
+**Vite:**
+```bash
+# .env.development
+VITE_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+
+# .env.production
+VITE_ANALYTICS_API=https://api.yourcompany.com/analytics
+```
+
+### Configuration Examples by Framework
+
+#### React (Create React App)
+
+```tsx
+// src/App.tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function App() {
+  const analytics = useAnalytics({
+    config: {
+      // Use environment variable with fallback
+      apiEndpoint: process.env.REACT_APP_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
+    },
+  });
+
+  return <div>Your App</div>;
+}
+```
+
+#### Next.js (App Router)
+
+```tsx
+// app/layout.tsx or app/components/AnalyticsProvider.tsx
+'use client';
+
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+  useAnalytics({
+    config: {
+      // Use Next.js environment variable
+      apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+    },
+  });
+
+  return <>{children}</>;
+}
+```
+
+#### Next.js (Pages Router)
+
+```tsx
+// pages/_app.tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function MyApp({ Component, pageProps }: any) {
+  useAnalytics({
+    config: {
+      apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+    },
+  });
+
+  return <Component {...pageProps} />;
+}
+
+export default MyApp;
+```
+
+#### Vite + React
+
+```tsx
+// src/main.tsx or src/App.tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function App() {
+  useAnalytics({
+    config: {
+      // Use Vite environment variable
+      apiEndpoint: import.meta.env.VITE_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
+    },
+  });
+
+  return <div>Your App</div>;
+}
+```
+
+### Using AnalyticsService Directly (Without React)
+
+```typescript
+import { AnalyticsService } from '@atif910/analytics-tracker';
+
+// Configure your backend URL
+AnalyticsService.configure({
+  apiEndpoint: 'https://api.yourcompany.com/analytics',
+});
+
+// Now all analytics will be sent to your backend
+await AnalyticsService.trackUserJourney({
+  sessionId: 'session123',
+  pageUrl: window.location.href,
+  // ... other data
+});
+```
+
+### Testing Your Configuration
+
+1. **Check Network Tab**: Open browser DevTools → Network tab
+2. **Look for POST requests**: Filter for `analytics` or your endpoint
+3. **Verify URL**: Ensure requests go to your configured URL
+4. **Check Response**: Verify your backend receives and processes the data
+
+### Troubleshooting Backend Configuration
+
+**Issue: Analytics not sending**
+- ✅ Check that your `apiEndpoint` URL is correct
+- ✅ Verify CORS is configured on your backend
+- ✅ Check browser console for errors
+- ✅ Test endpoint manually with curl/Postman
+
+**Issue: CORS errors**
+- ✅ Configure CORS on your backend to allow your frontend domain
+- ✅ Include proper headers: `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`
+
+**Issue: 404 errors**
+- ✅ Verify the endpoint path exists on your backend
+- ✅ Check that your backend server is running
+- ✅ Test the endpoint URL directly in browser/Postman
+
 ---
 
 ## 🚀 Quick Start
@@ -55,7 +300,15 @@ function App() {
   const { deviceInfo, networkInfo, logEvent } = useAnalytics({
     autoSend: true,
     config: {
-      apiEndpoint: '/api/analytics', // Your backend endpoint
+      // Configure your backend URL here
+      // Option 1: Full URL (recommended)
+      apiEndpoint: 'https://api.yourcompany.com/analytics',
+      
+      // Option 2: Relative path (same domain)
+      // apiEndpoint: '/api/analytics',
+      
+      // Option 3: Environment variable (best practice)
+      // apiEndpoint: process.env.REACT_APP_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
     },
   });
 
@@ -223,7 +476,8 @@ function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const { logEvent, sessionId } = useAnalytics({
     autoSend: true,
     config: {
-      apiEndpoint: '/api/analytics',
+      // Configure your backend URL
+      apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
     },
   });
 

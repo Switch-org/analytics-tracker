@@ -6,6 +6,8 @@
 
 A comprehensive, lightweight analytics tracking library for React applications. Track device information, network type, user location, attribution data, and more—all with zero runtime dependencies (React as peer dependency).
 
+**🔒 Privacy-First & Self-Hosted**: All analytics data is sent to **your own backend server**. No data is sent to third-party servers. You have full control over your analytics data.
+
 ## ✨ Features
 
 - 🔍 **Device Detection**: Automatically detects device type, OS, browser, model, brand, and hardware specs using User-Agent Client Hints
@@ -31,6 +33,130 @@ pnpm add @atif910/analytics-tracker react react-dom
 
 **Note**: React and React-DOM are peer dependencies and must be installed separately.
 
+## 🔒 Self-Hosted Analytics - Configure Your Backend URL
+
+**All analytics data is sent to YOUR backend server** - no third-party servers involved. You have complete control over your data.
+
+### Quick Configuration
+
+Simply provide your backend URL in the `apiEndpoint` configuration:
+
+```tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function App() {
+  const analytics = useAnalytics({
+    config: {
+      apiEndpoint: 'https://api.yourcompany.com/analytics', // Your backend URL
+    },
+  });
+}
+```
+
+### Configuration Options
+
+You can configure your backend URL in three ways:
+
+#### 1. **Full URL (Recommended for Production)**
+
+Use a complete URL pointing to your backend server:
+
+```tsx
+const analytics = useAnalytics({
+  config: {
+    // Point to your own server
+    apiEndpoint: 'https://api.yourcompany.com/analytics',
+    
+    // Or with a custom port
+    // apiEndpoint: 'https://api.yourcompany.com:8080/analytics',
+    
+    // Or using a subdomain
+    // apiEndpoint: 'https://analytics.yourcompany.com/track',
+  },
+});
+```
+
+#### 2. **Relative Path (Same Domain)**
+
+Use a relative path if your API is on the same domain as your frontend:
+
+```tsx
+const analytics = useAnalytics({
+  config: {
+    // Sends to: https://yourdomain.com/api/analytics
+    apiEndpoint: '/api/analytics',
+  },
+});
+```
+
+#### 3. **Environment Variables (Best Practice)**
+
+Use environment variables for different environments:
+
+```tsx
+// .env.local (development)
+// NEXT_PUBLIC_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+
+// .env.production
+// NEXT_PUBLIC_ANALYTICS_API=https://api.yourcompany.com/analytics
+
+const analytics = useAnalytics({
+  config: {
+    apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+  },
+});
+```
+
+### Step-by-Step Setup
+
+1. **Set up your backend API endpoint** (see [Backend Setup](#-backend-api-setup) below)
+2. **Configure the frontend** with your backend URL
+3. **Test the connection** using browser DevTools Network tab
+
+### Examples by Framework
+
+**React (Create React App)**
+```tsx
+// src/App.tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function App() {
+  const analytics = useAnalytics({
+    config: {
+      apiEndpoint: process.env.REACT_APP_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
+    },
+  });
+}
+```
+
+**Next.js**
+```tsx
+// app/layout.tsx or pages/_app.tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+export default function Layout() {
+  useAnalytics({
+    config: {
+      apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+    },
+  });
+}
+```
+
+**Vite + React**
+```tsx
+// src/main.tsx
+import { useAnalytics } from '@atif910/analytics-tracker';
+
+function App() {
+  useAnalytics({
+    config: {
+      apiEndpoint: import.meta.env.VITE_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
+    },
+  });
+}
+```
+
 ## 🚀 Quick Start
 
 ### Basic Usage (React Hook)
@@ -42,7 +168,10 @@ function MyApp() {
   const { sessionId, networkInfo, deviceInfo, location, logEvent } = useAnalytics({
     autoSend: true,
     config: {
-      apiEndpoint: '/api/analytics',
+      // Use your own backend server (full URL)
+      apiEndpoint: 'https://api.yourcompany.com/analytics',
+      // Or use relative path (same domain)
+      // apiEndpoint: '/api/analytics',
     },
   });
 
@@ -221,8 +350,13 @@ Send analytics data to your backend.
 ```typescript
 import { AnalyticsService } from '@atif910/analytics-tracker';
 
-// Configure endpoint
-AnalyticsService.configure({ apiEndpoint: '/api/analytics' });
+// Configure endpoint - use your own server
+AnalyticsService.configure({ 
+  apiEndpoint: 'https://api.yourcompany.com/analytics' 
+});
+
+// Or use relative path (same domain)
+// AnalyticsService.configure({ apiEndpoint: '/api/analytics' });
 
 // Track event
 await AnalyticsService.trackUserJourney({

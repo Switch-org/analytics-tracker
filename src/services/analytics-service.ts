@@ -3,12 +3,32 @@ import type { AnalyticsEvent, NetworkInfo, DeviceInfo, AttributionInfo } from '.
 /**
  * Analytics Service
  * Sends analytics events to your backend API
+ * 
+ * Supports both relative paths (e.g., '/api/analytics') and full URLs (e.g., 'https://your-server.com/api/analytics')
  */
 export class AnalyticsService {
   private static apiEndpoint: string = '/api/analytics';
 
   /**
    * Configure the analytics API endpoint
+   * 
+   * @param config - Configuration object
+   * @param config.apiEndpoint - Your backend API endpoint URL
+   *   - Relative path: '/api/analytics' (sends to same domain)
+   *   - Full URL: 'https://your-server.com/api/analytics' (sends to your server)
+   * 
+   * @example
+   * ```typescript
+   * // Use your own server
+   * AnalyticsService.configure({ 
+   *   apiEndpoint: 'https://api.yourcompany.com/analytics' 
+   * });
+   * 
+   * // Or use relative path (same domain)
+   * AnalyticsService.configure({ 
+   *   apiEndpoint: '/api/analytics' 
+   * });
+   * ```
    */
   static configure(config: { apiEndpoint: string }) {
     this.apiEndpoint = config.apiEndpoint;
