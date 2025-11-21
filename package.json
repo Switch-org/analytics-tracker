@@ -1,6 +1,6 @@
 {
   "name": "@atif910/analytics-tracker",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Comprehensive analytics tracking library with device detection, network analysis, location tracking, and IP geolocation",
   "keywords": [
     "analytics",
