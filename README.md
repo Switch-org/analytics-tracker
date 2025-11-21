@@ -620,12 +620,12 @@ MIT © [Switch Org](https://github.com/switch-org)
 - Uses [ip-api.com](http://ip-api.com) for free IP geolocation
 - Built with modern web APIs (User-Agent Client Hints, Network Information API, Geolocation API)
 
-## 📞 Support
+<!-- ## 📞 Support
 
 - 📧 Email: support@switch.org
 - 🐛 Issues: [GitHub Issues](https://github.com/switch-org/analytics-tracker/issues)
 - 📖 Documentation: See the [docs/](./docs) directory for comprehensive guides
 
----
+--- -->
 
 Made with ❤️ by ATIF RAFIQUE
