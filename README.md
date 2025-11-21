@@ -1,6 +1,6 @@
-# @atif/analytics-tracker
+# @atif910/analytics-tracker
 
-[![npm version](https://badge.fury.io/js/%40atif%2Fanalytics-tracker.svg)](https://www.npmjs.com/package/@atif/analytics-tracker)
+[![npm version](https://badge.fury.io/js/%40atif910%2Fanalytics-tracker.svg)](https://www.npmjs.com/package/@atif910/analytics-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml)
 
@@ -22,11 +22,11 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 ## 📦 Installation
 
 ```bash
-npm install @atif/analytics-tracker react react-dom
+npm install @atif910/analytics-tracker react react-dom
 # or
-yarn add @atif/analytics-tracker react react-dom
+yarn add @atif910/analytics-tracker react react-dom
 # or
-pnpm add @atif/analytics-tracker react react-dom
+pnpm add @atif910/analytics-tracker react react-dom
 ```
 
 **Note**: React and React-DOM are peer dependencies and must be installed separately.
@@ -36,7 +36,7 @@ pnpm add @atif/analytics-tracker react react-dom
 ### Basic Usage (React Hook)
 
 ```tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function MyApp() {
   const { sessionId, networkInfo, deviceInfo, location, logEvent } = useAnalytics({
@@ -66,7 +66,7 @@ import {
   DeviceDetector,
   AttributionDetector,
   LocationDetector,
-} from '@atif/analytics-tracker';
+} from '@atif910/analytics-tracker';
 
 // Detect network type
 const network = NetworkDetector.detect();
@@ -219,7 +219,7 @@ const attribution = AttributionDetector.detect();
 Send analytics data to your backend.
 
 ```typescript
-import { AnalyticsService } from '@atif/analytics-tracker';
+import { AnalyticsService } from '@atif910/analytics-tracker';
 
 // Configure endpoint
 AnalyticsService.configure({ apiEndpoint: '/api/analytics' });
@@ -246,7 +246,7 @@ import {
   hasLocationConsent,
   checkAndSetLocationConsent,
   clearLocationConsent,
-} from '@atif/analytics-tracker';
+} from '@atif910/analytics-tracker';
 
 // When user enters MSISDN, grant location consent
 checkAndSetLocationConsent(msisdn); // Returns true if consent granted
@@ -264,7 +264,7 @@ clearLocationConsent();
 #### IP Geolocation (Server-Side)
 
 ```typescript
-import { getIPLocation, getIPFromRequest } from '@atif/analytics-tracker';
+import { getIPLocation, getIPFromRequest } from '@atif910/analytics-tracker';
 
 // In your API route (Next.js example)
 export async function POST(req: Request) {
@@ -281,7 +281,7 @@ export async function POST(req: Request) {
 When a user enters their phone number (MSISDN), it implies consent for location tracking. The library automatically grants location consent:
 
 ```typescript
-import { checkAndSetLocationConsent } from '@atif/analytics-tracker';
+import { checkAndSetLocationConsent } from '@atif910/analytics-tracker';
 
 // When MSISDN is entered
 checkAndSetLocationConsent(phoneNumber);
@@ -293,7 +293,7 @@ checkAndSetLocationConsent(phoneNumber);
 Detect and restrict hotspot users:
 
 ```tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function HotspotGate({ children }) {
   const { networkInfo } = useAnalytics({ autoSend: false });
@@ -316,7 +316,7 @@ function HotspotGate({ children }) {
 ### Custom Analytics Service
 
 ```typescript
-import { AnalyticsService } from '@atif/analytics-tracker';
+import { AnalyticsService } from '@atif910/analytics-tracker';
 
 class MyAnalyticsService extends AnalyticsService {
   static async trackUserJourney(data: any) {
@@ -352,7 +352,7 @@ Example Next.js API route:
 ```typescript
 // app/api/analytics/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getIPFromRequest, getIPLocation } from '@atif/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from '@atif910/analytics-tracker';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -452,7 +452,7 @@ import type {
   AttributionInfo,
   IPLocation,
   UseAnalyticsReturn,
-} from '@atif/analytics-tracker';
+} from '@atif910/analytics-tracker';
 ```
 
 ## 🤝 Contributing

@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-This guide will help you **run**, **test**, and **publish** your `@atif/analytics-tracker` package.
+This guide will help you **run**, **test**, and **publish** your `@atif910/analytics-tracker` package.
 
 ## 🚀 Step 1: Run/Develop Your Package Locally
 
@@ -90,12 +90,12 @@ describe('NetworkDetector', () => {
 
 2. **In your test React app**:
    ```bash
-   npm link @atif/analytics-tracker
+   npm link @atif910/analytics-tracker
    ```
 
 3. **Use in your test app**:
    ```tsx
-   import { useAnalytics } from '@atif/analytics-tracker';
+   import { useAnalytics } from '@atif910/analytics-tracker';
    
    function App() {
      const { deviceInfo, networkInfo } = useAnalytics();
@@ -106,7 +106,7 @@ describe('NetworkDetector', () => {
 4. **To unlink**:
    ```bash
    # In your test app
-   npm unlink @atif/analytics-tracker
+   npm unlink @atif910/analytics-tracker
    
    # In package directory
    npm unlink
@@ -243,10 +243,10 @@ For manual control:
 
 ```bash
 # Check on npm website
-# Visit: https://www.npmjs.com/package/@atif/analytics-tracker
+# Visit: https://www.npmjs.com/package/@atif910/analytics-tracker
 
 # Or via CLI
-npm view @atif/analytics-tracker
+npm view @atif910/analytics-tracker
 ```
 
 ### Install Your Published Package
@@ -254,7 +254,7 @@ npm view @atif/analytics-tracker
 Once published, anyone can install it:
 
 ```bash
-npm install @atif/analytics-tracker react react-dom
+npm install @atif910/analytics-tracker react react-dom
 ```
 
 ## 🔄 Complete Development Workflow
@@ -349,7 +349,7 @@ npm login
 
 ### Package not found after publishing
 - Wait a few minutes (npm CDN cache)
-- Check package name matches exactly: `@atif/analytics-tracker`
+- Check package name matches exactly: `@atif910/analytics-tracker`
 - Verify scope access in npm account settings
 
 ## 🎯 Next Steps

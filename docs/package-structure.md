@@ -1,6 +1,6 @@
 # Package Structure
 
-This document describes the structure of the `@atif/analytics-tracker` package.
+This document describes the structure of the `@atif910/analytics-tracker` package.
 
 ## Table of Contents
 
@@ -125,7 +125,7 @@ After running `npm run build`, the following files are generated in `dist/`:
 ### `package.json`
 
 Defines:
-- Package name: `@atif/analytics-tracker`
+- Package name: `@atif910/analytics-tracker`
 - Entry points: `main`, `module`, `types`, `exports`
 - Scripts: build, test, lint, format, type-check
 - Dependencies: None (zero runtime deps)
@@ -201,8 +201,8 @@ The package exports are configured in `package.json`:
 ```
 
 This allows:
-- ESM: `import { useAnalytics } from '@atif/analytics-tracker'`
-- CJS: `const { useAnalytics } = require('@atif/analytics-tracker')`
+- ESM: `import { useAnalytics } from '@atif910/analytics-tracker'`
+- CJS: `const { useAnalytics } = require('@atif910/analytics-tracker')`
 - TypeScript: Full type support for both formats
 
 ## Development Workflow

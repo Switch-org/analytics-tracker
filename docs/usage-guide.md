@@ -1,6 +1,6 @@
 # Usage Guide
 
-This comprehensive guide shows you exactly how to use `@atif/analytics-tracker` in your applications. From installation to advanced use cases, everything is covered here.
+This comprehensive guide shows you exactly how to use `@atif910/analytics-tracker` in your applications. From installation to advanced use cases, everything is covered here.
 
 ## 📦 Table of Contents
 
@@ -23,13 +23,13 @@ This comprehensive guide shows you exactly how to use `@atif/analytics-tracker` 
 
 ```bash
 # Using npm
-npm install @atif/analytics-tracker react react-dom
+npm install @atif910/analytics-tracker react react-dom
 
 # Using yarn
-yarn add @atif/analytics-tracker react react-dom
+yarn add @atif910/analytics-tracker react react-dom
 
 # Using pnpm
-pnpm add @atif/analytics-tracker react react-dom
+pnpm add @atif910/analytics-tracker react react-dom
 ```
 
 **Important**: React and React-DOM are peer dependencies and must be installed separately. The minimum React version required is 16.8.0 (for hooks support).
@@ -38,7 +38,7 @@ pnpm add @atif/analytics-tracker react react-dom
 
 ```bash
 # Check if package is installed
-npm list @atif/analytics-tracker
+npm list @atif910/analytics-tracker
 ```
 
 ---
@@ -49,7 +49,7 @@ npm list @atif/analytics-tracker
 
 ```tsx
 // App.tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function App() {
   const { deviceInfo, networkInfo, logEvent } = useAnalytics({
@@ -92,7 +92,7 @@ First, create an API endpoint to receive analytics data. Here are examples for d
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { getIPFromRequest, getIPLocation } from '@atif/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from '@atif910/analytics-tracker';
 
 export async function POST(req: NextRequest) {
   try {
@@ -131,7 +131,7 @@ async function saveAnalyticsData(data: any) {
 ```javascript
 const express = require('express');
 const router = express.Router();
-const { getIPFromRequest, getIPLocation } = require('@atif/analytics-tracker');
+const { getIPFromRequest, getIPLocation } = require('@atif910/analytics-tracker');
 
 router.post('/api/analytics', async (req, res) => {
   try {
@@ -159,7 +159,7 @@ module.exports = router;
 
 ```typescript
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { getIPFromRequest, getIPLocation } from '@atif/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from '@atif910/analytics-tracker';
 
 export async function analyticsRoute(
   request: FastifyRequest<{ Body: any }>,
@@ -188,7 +188,7 @@ export async function analyticsRoute(
 
 ```tsx
 // App.tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function App() {
   const { sessionId, deviceInfo, networkInfo, location, attribution, logEvent } = useAnalytics({
@@ -215,7 +215,7 @@ function App() {
 ```tsx
 // App.tsx
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 import { useEffect } from 'react';
 
 // Analytics provider component
@@ -269,7 +269,7 @@ function App() {
 ### Basic Hook Configuration
 
 ```tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function MyComponent() {
   const analytics = useAnalytics({
@@ -432,7 +432,7 @@ function NetworkMonitor() {
 ### Example 1: E-Commerce Product Tracking
 
 ```tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function ProductDetailPage({ product }: { product: Product }) {
   const { logEvent, deviceInfo, networkInfo } = useAnalytics({
@@ -533,7 +533,7 @@ function ContactForm() {
 ### Example 3: Hotspot Detection & Gating
 
 ```tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function HotspotGate({ children }: { children: React.ReactNode }) {
   const { networkInfo, logEvent } = useAnalytics({
@@ -579,7 +579,7 @@ function App() {
 ### Example 4: Location-Based Features
 
 ```tsx
-import { useAnalytics, checkAndSetLocationConsent } from '@atif/analytics-tracker';
+import { useAnalytics, checkAndSetLocationConsent } from '@atif910/analytics-tracker';
 
 function LocationFeature() {
   const { location, logEvent, refresh } = useAnalytics({
@@ -670,7 +670,7 @@ You can use the detectors without React:
 ### Device Detection
 
 ```typescript
-import { DeviceDetector } from '@atif/analytics-tracker';
+import { DeviceDetector } from '@atif910/analytics-tracker';
 
 // Detect device information
 const deviceInfo = await DeviceDetector.detect();
@@ -707,7 +707,7 @@ console.log(deviceInfo.type);            // "mobile" | "tablet" | "desktop"
 ### Network Detection
 
 ```typescript
-import { NetworkDetector } from '@atif/analytics-tracker';
+import { NetworkDetector } from '@atif910/analytics-tracker';
 
 // Detect network type (synchronous)
 const networkInfo = NetworkDetector.detect();
@@ -731,7 +731,7 @@ if (typeof navigator !== 'undefined' && 'connection' in navigator) {
 ### Attribution Detection
 
 ```typescript
-import { AttributionDetector } from '@atif/analytics-tracker';
+import { AttributionDetector } from '@atif910/analytics-tracker';
 
 // Detect attribution data (UTM parameters, referrer, etc.)
 const attribution = AttributionDetector.detect();
@@ -753,7 +753,7 @@ console.log(attribution.lastTouch);      // Last touchpoint data
 ### Location Detection
 
 ```typescript
-import { LocationDetector, hasLocationConsent, checkAndSetLocationConsent } from '@atif/analytics-tracker';
+import { LocationDetector, hasLocationConsent, checkAndSetLocationConsent } from '@atif910/analytics-tracker';
 
 // Check if user has granted consent
 if (hasLocationConsent()) {
@@ -779,7 +779,7 @@ if (consentGranted) {
 ### Direct API Service Usage
 
 ```typescript
-import { AnalyticsService, NetworkDetector, DeviceDetector, AttributionDetector } from '@atif/analytics-tracker';
+import { AnalyticsService, NetworkDetector, DeviceDetector, AttributionDetector } from '@atif910/analytics-tracker';
 
 // Configure the service
 AnalyticsService.configure({
@@ -907,7 +907,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 // app/components/AnalyticsProvider.tsx
 'use client';
 
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   useAnalytics({
@@ -925,7 +925,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // pages/_app.tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function MyApp({ Component, pageProps }: any) {
   useAnalytics({
@@ -958,7 +958,7 @@ export const wrapRootElement = ({ element }) => {
 };
 
 // src/components/AnalyticsProvider.js
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 export function AnalyticsProvider({ children }) {
   useAnalytics({
@@ -976,7 +976,7 @@ export function AnalyticsProvider({ children }) {
 
 ```tsx
 // src/App.tsx
-import { useAnalytics } from '@atif/analytics-tracker';
+import { useAnalytics } from '@atif910/analytics-tracker';
 
 function App() {
   useAnalytics({
@@ -1003,7 +1003,7 @@ import {
   checkAndSetLocationConsent, 
   hasLocationConsent, 
   clearLocationConsent 
-} from '@atif/analytics-tracker';
+} from '@atif910/analytics-tracker';
 
 function PhoneNumberForm() {
   const handleSubmit = async (phoneNumber: string) => {

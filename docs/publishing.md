@@ -1,6 +1,6 @@
 # Publishing Guide
 
-This guide explains how to publish `@atif/analytics-tracker` to npm.
+This guide explains how to publish `@atif910/analytics-tracker` to npm.
 
 ## Table of Contents
 
@@ -252,7 +252,7 @@ npm publish --tag beta --access public
 
 Users install with:
 ```bash
-npm install @atif/analytics-tracker@beta
+npm install @atif910/analytics-tracker@beta
 ```
 
 ### Unpublishing (Emergency Only)
@@ -261,10 +261,10 @@ npm install @atif/analytics-tracker@beta
 
 ```bash
 # Unpublish specific version
-npm unpublish @atif/analytics-tracker@0.1.0
+npm unpublish @atif910/analytics-tracker@0.1.0
 
 # Deprecate instead (recommended)
-npm deprecate @atif/analytics-tracker@0.1.0 "Use version 0.2.0 instead"
+npm deprecate @atif910/analytics-tracker@0.1.0 "Use version 0.2.0 instead"
 ```
 
 ## Best Practices
