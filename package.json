@@ -48,7 +48,7 @@
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
     "dev": "npm run build:watch",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "lint": "eslint src",
