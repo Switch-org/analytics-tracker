@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-This guide will help you **run**, **test**, and **publish** your `@secureteen/analytics-tracker` package.
+This guide will help you **run**, **test**, and **publish** your `@atif/analytics-tracker` package.
 
 ## 🚀 Step 1: Run/Develop Your Package Locally
 
@@ -90,12 +90,12 @@ describe('NetworkDetector', () => {
 
 2. **In your test React app**:
    ```bash
-   npm link @secureteen/analytics-tracker
+   npm link @atif/analytics-tracker
    ```
 
 3. **Use in your test app**:
    ```tsx
-   import { useAnalytics } from '@secureteen/analytics-tracker';
+   import { useAnalytics } from '@atif/analytics-tracker';
    
    function App() {
      const { deviceInfo, networkInfo } = useAnalytics();
@@ -106,7 +106,7 @@ describe('NetworkDetector', () => {
 4. **To unlink**:
    ```bash
    # In your test app
-   npm unlink @secureteen/analytics-tracker
+   npm unlink @atif/analytics-tracker
    
    # In package directory
    npm unlink
@@ -118,17 +118,17 @@ describe('NetworkDetector', () => {
 # Create a tarball (.tgz file) like npm would publish
 npm pack
 
-# This creates: secureteen-analytics-tracker-0.1.0.tgz
+# This creates: atif-analytics-tracker-0.1.0.tgz
 
 # In a test React app, install it:
-npm install /path/to/analytics-tracker/secureteen-analytics-tracker-0.1.0.tgz
+npm install /path/to/analytics-tracker/atif-analytics-tracker-0.1.0.tgz
 ```
 
 ## 🌐 Step 4: Make It Live (Publish to npm)
 
 ### Prerequisites
 
-1. **npm Account**: You need an npm account with access to the `@secureteen` scope
+1. **npm Account**: You need an npm account with access to the `@atif` scope
 2. **Login to npm**:
    ```bash
    npm login
@@ -243,10 +243,10 @@ For manual control:
 
 ```bash
 # Check on npm website
-# Visit: https://www.npmjs.com/package/@secureteen/analytics-tracker
+# Visit: https://www.npmjs.com/package/@atif/analytics-tracker
 
 # Or via CLI
-npm view @secureteen/analytics-tracker
+npm view @atif/analytics-tracker
 ```
 
 ### Install Your Published Package
@@ -254,7 +254,7 @@ npm view @secureteen/analytics-tracker
 Once published, anyone can install it:
 
 ```bash
-npm install @secureteen/analytics-tracker react react-dom
+npm install @atif/analytics-tracker react react-dom
 ```
 
 ## 🔄 Complete Development Workflow
@@ -340,7 +340,7 @@ npm test
 # Check you're logged in
 npm whoami
 
-# Check you have access to @secureteen scope
+# Check you have access to @atif scope
 npm login
 
 # Verify publishConfig in package.json
@@ -349,7 +349,7 @@ npm login
 
 ### Package not found after publishing
 - Wait a few minutes (npm CDN cache)
-- Check package name matches exactly: `@secureteen/analytics-tracker`
+- Check package name matches exactly: `@atif/analytics-tracker`
 - Verify scope access in npm account settings
 
 ## 🎯 Next Steps
@@ -363,7 +363,9 @@ npm login
 ---
 
 For more details, see:
-- [README.md](./README.md) - Package documentation
-- [PUBLISHING.md](./PUBLISHING.md) - Detailed publishing guide
-- [CHANGELOG.md](./CHANGELOG.md) - Version history
+- [Main README](../README.md) - Package documentation
+- [Usage Guide](./usage-guide.md) - Complete usage guide
+- [Publishing Guide](./publishing.md) - Detailed publishing guide
+- [Package Structure](./package-structure.md) - Codebase structure
+- [CHANGELOG](../CHANGELOG.md) - Version history
 

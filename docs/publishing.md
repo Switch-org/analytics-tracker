@@ -1,10 +1,22 @@
 # Publishing Guide
 
-This guide explains how to publish `@secureteen/analytics-tracker` to npm.
+This guide explains how to publish `@atif/analytics-tracker` to npm.
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Initial Setup](#initial-setup)
+3. [Publishing Methods](#publishing-methods)
+4. [Pre-Publish Checklist](#pre-publish-checklist)
+5. [Troubleshooting](#troubleshooting)
+6. [Version Management](#version-management)
+7. [Best Practices](#best-practices)
+8. [Security](#security)
+9. [Resources](#resources)
 
 ## Prerequisites
 
-1. **npm Account**: You need an npm account with access to the `@secureteen` scope
+1. **npm Account**: You need an npm account with access to the `@atif` scope
 2. **NPM_TOKEN**: Create an npm access token with publish permissions
 3. **GitHub Token**: For semantic-release automation
 
@@ -28,7 +40,7 @@ npm whoami
 
 ### 3. Set npm Scope Access
 
-For scoped packages (`@secureteen/...`), ensure public access:
+For scoped packages (`@atif/...`), ensure public access:
 
 ```bash
 npm publish --access public
@@ -178,7 +190,7 @@ Before publishing, ensure:
 
 ### "You do not have permission to publish"
 
-**Solution**: Ensure you're logged in and have access to the `@secureteen` scope.
+**Solution**: Ensure you're logged in and have access to the `@atif` scope.
 
 ```bash
 npm whoami
@@ -240,7 +252,7 @@ npm publish --tag beta --access public
 
 Users install with:
 ```bash
-npm install @secureteen/analytics-tracker@beta
+npm install @atif/analytics-tracker@beta
 ```
 
 ### Unpublishing (Emergency Only)
@@ -249,10 +261,10 @@ npm install @secureteen/analytics-tracker@beta
 
 ```bash
 # Unpublish specific version
-npm unpublish @secureteen/analytics-tracker@0.1.0
+npm unpublish @atif/analytics-tracker@0.1.0
 
 # Deprecate instead (recommended)
-npm deprecate @secureteen/analytics-tracker@0.1.0 "Use version 0.2.0 instead"
+npm deprecate @atif/analytics-tracker@0.1.0 "Use version 0.2.0 instead"
 ```
 
 ## Best Practices
@@ -279,6 +291,14 @@ npm deprecate @secureteen/analytics-tracker@0.1.0 "Use version 0.2.0 instead"
 - [Semantic Release](https://semantic-release.gitbook.io/)
 
 ---
+
+---
+
+For more information, see:
+- [Main README](../README.md) - Package documentation
+- [Usage Guide](./usage-guide.md) - Complete usage guide
+- [Quick Start](./quick-start.md) - Getting started guide
+- [Package Structure](./package-structure.md) - Codebase structure
 
 Happy Publishing! 🚀
 

@@ -1,6 +1,21 @@
 # Package Structure
 
-This document describes the structure of the `@secureteen/analytics-tracker` package.
+This document describes the structure of the `@atif/analytics-tracker` package.
+
+## Table of Contents
+
+1. [Directory Structure](#directory-structure)
+2. [Key Files](#key-files)
+3. [Build Output](#build-output)
+4. [Configuration Files](#configuration-files)
+5. [GitHub Workflows](#github-workflows)
+6. [Package Exports](#package-exports)
+7. [Development Workflow](#development-workflow)
+8. [Testing](#testing)
+9. [Type Safety](#type-safety)
+10. [Bundle Size](#bundle-size)
+11. [Browser Support](#browser-support)
+12. [Node.js Support](#nodejs-support)
 
 ## Directory Structure
 
@@ -39,7 +54,7 @@ analytics-tracker/
 ├── .prettierignore             # Prettier ignore patterns
 ├── .gitignore                  # Git ignore patterns
 ├── .releaserc.json             # Semantic Release configuration
-├── rollup.config.js            # Rollup build configuration
+├── rollup.config.mjs           # Rollup build configuration
 ├── tsconfig.json               # TypeScript configuration
 ├── vitest.config.ts            # Vitest test configuration
 ├── package.json                # npm package manifest
@@ -47,8 +62,12 @@ analytics-tracker/
 ├── README.md                   # Package documentation
 ├── CHANGELOG.md                # Version changelog
 ├── LICENSE                     # MIT License
-├── PUBLISHING.md               # Publishing guide
-└── PACKAGE_STRUCTURE.md        # This file
+└── docs/                       # Documentation directory
+    ├── README.md               # Documentation index
+    ├── usage-guide.md          # Complete usage guide
+    ├── quick-start.md          # Quick start guide
+    ├── publishing.md           # Publishing guide
+    └── package-structure.md    # This file
 ```
 
 ## Key Files
@@ -106,7 +125,7 @@ After running `npm run build`, the following files are generated in `dist/`:
 ### `package.json`
 
 Defines:
-- Package name: `@secureteen/analytics-tracker`
+- Package name: `@atif/analytics-tracker`
 - Entry points: `main`, `module`, `types`, `exports`
 - Scripts: build, test, lint, format, type-check
 - Dependencies: None (zero runtime deps)
@@ -121,7 +140,7 @@ TypeScript compiler configuration:
 - JSX: react-jsx (React 17+)
 - Strict mode: enabled
 
-### `rollup.config.js`
+### `rollup.config.mjs`
 
 Build configuration:
 - Creates both ESM and CJS builds
@@ -182,8 +201,8 @@ The package exports are configured in `package.json`:
 ```
 
 This allows:
-- ESM: `import { useAnalytics } from '@secureteen/analytics-tracker'`
-- CJS: `const { useAnalytics } = require('@secureteen/analytics-tracker')`
+- ESM: `import { useAnalytics } from '@atif/analytics-tracker'`
+- CJS: `const { useAnalytics } = require('@atif/analytics-tracker')`
 - TypeScript: Full type support for both formats
 
 ## Development Workflow
@@ -244,4 +263,12 @@ This structure ensures the package is:
 - ✅ Well-tested
 - ✅ Easy to use
 - ✅ Production-ready
+
+---
+
+For more information, see:
+- [Main README](../README.md) - Package documentation
+- [Usage Guide](./usage-guide.md) - Complete usage guide
+- [Quick Start](./quick-start.md) - Getting started guide
+- [Publishing Guide](./publishing.md) - Publishing instructions
 

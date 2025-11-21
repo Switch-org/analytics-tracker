@@ -1,5 +1,5 @@
 {
-  "name": "@secureteen/analytics-tracker",
+  "name": "@atif/analytics-tracker",
   "version": "0.1.0",
   "description": "Comprehensive analytics tracking library with device detection, network analysis, location tracking, and IP geolocation",
   "keywords": [

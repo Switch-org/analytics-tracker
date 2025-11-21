@@ -1,5 +1,5 @@
 /**
- * @secureteen/analytics-tracker
+ * @atif/analytics-tracker
  * Comprehensive analytics tracking library with device detection,
  * network analysis, location tracking, and IP geolocation
  */

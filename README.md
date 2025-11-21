@@ -1,6 +1,6 @@
-# @secureteen/analytics-tracker
+# @atif/analytics-tracker
 
-[![npm version](https://badge.fury.io/js/%40secureteen%2Fanalytics-tracker.svg)](https://www.npmjs.com/package/@secureteen/analytics-tracker)
+[![npm version](https://badge.fury.io/js/%40atif%2Fanalytics-tracker.svg)](https://www.npmjs.com/package/@atif/analytics-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml)
 
@@ -22,11 +22,11 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 ## 📦 Installation
 
 ```bash
-npm install @secureteen/analytics-tracker react react-dom
+npm install @atif/analytics-tracker react react-dom
 # or
-yarn add @secureteen/analytics-tracker react react-dom
+yarn add @atif/analytics-tracker react react-dom
 # or
-pnpm add @secureteen/analytics-tracker react react-dom
+pnpm add @atif/analytics-tracker react react-dom
 ```
 
 **Note**: React and React-DOM are peer dependencies and must be installed separately.
@@ -36,7 +36,7 @@ pnpm add @secureteen/analytics-tracker react react-dom
 ### Basic Usage (React Hook)
 
 ```tsx
-import { useAnalytics } from '@secureteen/analytics-tracker';
+import { useAnalytics } from '@atif/analytics-tracker';
 
 function MyApp() {
   const { sessionId, networkInfo, deviceInfo, location, logEvent } = useAnalytics({
@@ -66,7 +66,7 @@ import {
   DeviceDetector,
   AttributionDetector,
   LocationDetector,
-} from '@secureteen/analytics-tracker';
+} from '@atif/analytics-tracker';
 
 // Detect network type
 const network = NetworkDetector.detect();
@@ -219,7 +219,7 @@ const attribution = AttributionDetector.detect();
 Send analytics data to your backend.
 
 ```typescript
-import { AnalyticsService } from '@secureteen/analytics-tracker';
+import { AnalyticsService } from '@atif/analytics-tracker';
 
 // Configure endpoint
 AnalyticsService.configure({ apiEndpoint: '/api/analytics' });
@@ -246,7 +246,7 @@ import {
   hasLocationConsent,
   checkAndSetLocationConsent,
   clearLocationConsent,
-} from '@secureteen/analytics-tracker';
+} from '@atif/analytics-tracker';
 
 // When user enters MSISDN, grant location consent
 checkAndSetLocationConsent(msisdn); // Returns true if consent granted
@@ -264,7 +264,7 @@ clearLocationConsent();
 #### IP Geolocation (Server-Side)
 
 ```typescript
-import { getIPLocation, getIPFromRequest } from '@secureteen/analytics-tracker';
+import { getIPLocation, getIPFromRequest } from '@atif/analytics-tracker';
 
 // In your API route (Next.js example)
 export async function POST(req: Request) {
@@ -281,7 +281,7 @@ export async function POST(req: Request) {
 When a user enters their phone number (MSISDN), it implies consent for location tracking. The library automatically grants location consent:
 
 ```typescript
-import { checkAndSetLocationConsent } from '@secureteen/analytics-tracker';
+import { checkAndSetLocationConsent } from '@atif/analytics-tracker';
 
 // When MSISDN is entered
 checkAndSetLocationConsent(phoneNumber);
@@ -293,7 +293,7 @@ checkAndSetLocationConsent(phoneNumber);
 Detect and restrict hotspot users:
 
 ```tsx
-import { useAnalytics } from '@secureteen/analytics-tracker';
+import { useAnalytics } from '@atif/analytics-tracker';
 
 function HotspotGate({ children }) {
   const { networkInfo } = useAnalytics({ autoSend: false });
@@ -316,7 +316,7 @@ function HotspotGate({ children }) {
 ### Custom Analytics Service
 
 ```typescript
-import { AnalyticsService } from '@secureteen/analytics-tracker';
+import { AnalyticsService } from '@atif/analytics-tracker';
 
 class MyAnalyticsService extends AnalyticsService {
   static async trackUserJourney(data: any) {
@@ -352,7 +352,7 @@ Example Next.js API route:
 ```typescript
 // app/api/analytics/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getIPFromRequest, getIPLocation } from '@secureteen/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from '@atif/analytics-tracker';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -369,6 +369,37 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 ```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs) directory:
+
+- **[Usage Guide](./docs/usage-guide.md)** - Complete guide on how to use the package in your applications
+  - Installation instructions
+  - Basic and advanced usage examples
+  - React hook documentation
+  - Standalone (non-React) usage
+  - Framework integrations (Next.js, Gatsby, etc.)
+  - Real-world examples
+  - Troubleshooting
+
+- **[Quick Start Guide](./docs/quick-start.md)** - Get started in 5 minutes
+  - Installation
+  - Basic setup
+  - Development workflow
+  - Common commands
+
+- **[Publishing Guide](./docs/publishing.md)** - How to publish the package
+  - Prerequisites
+  - Publishing methods (automatic & manual)
+  - Version management
+  - Best practices
+
+- **[Package Structure](./docs/package-structure.md)** - Understanding the codebase
+  - Directory structure
+  - Architecture overview
+  - Code organization
+  - Development guidelines
 
 ## 🧪 Testing
 
@@ -421,7 +452,7 @@ import type {
   AttributionInfo,
   IPLocation,
   UseAnalyticsReturn,
-} from '@secureteen/analytics-tracker';
+} from '@atif/analytics-tracker';
 ```
 
 ## 🤝 Contributing
@@ -459,7 +490,7 @@ MIT © [Switch Org](https://github.com/switch-org)
 
 - 📧 Email: support@switch.org
 - 🐛 Issues: [GitHub Issues](https://github.com/switch-org/analytics-tracker/issues)
-- 📖 Documentation: [Full Docs](https://github.com/switch-org/analytics-tracker#readme)
+- 📖 Documentation: See the [docs/](./docs) directory for comprehensive guides
 
 ---
 
