@@ -97,7 +97,7 @@ export class DeviceDetector {
       platform = 'Linux';
       if (/Ubuntu/i.test(ua)) {
         platform = 'Ubuntu';
-        const ubuntuMatch = ua.match(/Ubuntu[\/\s](\d+\.\d+)/);
+        const ubuntuMatch = ua.match(/Ubuntu[/\s](\d+\.\d+)/);
         platformVersion = ubuntuMatch ? ubuntuMatch[1] : 'Unknown';
       }
     }

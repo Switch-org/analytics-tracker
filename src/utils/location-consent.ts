@@ -46,7 +46,7 @@ export function getLocationConsentTimestamp(): string | null {
 
   try {
     return localStorage.getItem(LOCATION_CONSENT_TIMESTAMP_KEY);
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

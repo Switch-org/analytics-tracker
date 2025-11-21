@@ -52,9 +52,9 @@ export class AnalyticsService {
       } else if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
         console.log('[Analytics] Event sent successfully');
       }
-    } catch (error) {
+    } catch (err) {
       // Don't break user experience - silently fail
-      console.warn('[Analytics] Failed to send event:', error);
+      console.warn('[Analytics] Failed to send event:', err);
     }
   }
 

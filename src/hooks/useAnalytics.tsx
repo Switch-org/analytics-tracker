@@ -2,7 +2,7 @@
  * React Hook for Analytics Tracking
  * Provides device, network, location, and attribution data
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   NetworkInfo,
   DeviceInfo,
@@ -209,8 +209,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
       deviceInfo,
       location,
       attribution,
-      pageVisits,
-      interactions,
+      pageVisits, // Used in return
+      interactions, // Used in return
       logEvent,
       incrementInteraction,
       refresh,
