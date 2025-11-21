@@ -9,11 +9,43 @@ This guide will help you set up automatic npm publishing via GitHub Actions.
 
 ## 🔑 Step 1: Create npm Access Token
 
+### Important: Token Type and Permissions
+
+You need an **Automation** token with **publish** permissions:
+
 1. Go to [npmjs.com](https://www.npmjs.com/) and log in
-2. Click on your profile picture → **Access Tokens**
-3. Click **Generate New Token** → **Automation**
-4. Copy the token (starts with `npm_...`)
-5. **Important**: Save this token securely - you won't be able to see it again!
+2. Click on your profile picture (top right) → **Access Tokens**
+3. Click **Generate New Token**
+4. **Select "Automation" token type** (NOT "Classic")
+   - **Automation tokens** are required for CI/CD and semantic-release
+   - These tokens are designed for automated publishing
+5. **Token name**: `github-actions` (or any name you prefer)
+6. **Expiration**: Choose based on your preference
+   - For long-term: "No expiration"
+   - For security: Set expiration date
+7. Click **Generate Token**
+8. **Copy the token immediately** (starts with `npm_...`)
+   - ⚠️ **Important**: You won't be able to see this token again!
+   - Save it securely until you add it to GitHub Secrets
+
+### Two-Factor Authentication (2FA)
+
+If you have 2FA enabled on your npm account:
+
+- **Required setting**: Set 2FA level to **"Authorization only"**
+- ❌ **NOT**: "Authorization and writes" (this won't work with semantic-release)
+- To change: npmjs.com → Profile → Two Factor Authentication → Change level
+
+### Verify Token Permissions
+
+After creating the token, verify it has the right permissions:
+
+```bash
+# Test token locally (optional)
+export NPM_TOKEN="npm_your_token_here"
+echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+npm whoami  # Should show your npm username
+```
 
 ## 🔐 Step 2: Add NPM_TOKEN to GitHub Secrets
 
@@ -80,6 +112,41 @@ To trigger automatic releases, use [Conventional Commits](https://www.convention
 
 ## 🔍 Troubleshooting
 
+### Invalid npm token error
+
+If you see `EINVALIDNPMTOKEN` or `401 Unauthorized`:
+
+1. **Check token type**:
+   - ✅ Must be **Automation token** (not Classic token)
+   - ❌ Classic tokens don't work with semantic-release
+
+2. **Check token permissions**:
+   - ✅ Token must have **publish** permissions
+   - ✅ Must have access to `@atif910` scope
+
+3. **Check 2FA settings** (if enabled):
+   - ✅ Set to **"Authorization only"**
+   - ❌ NOT "Authorization and writes"
+
+4. **Verify token in GitHub Secrets**:
+   - Go to GitHub repo → Settings → Secrets and variables → Actions
+   - Verify `NPM_TOKEN` secret exists
+   - Ensure it's the exact token value (starts with `npm_`)
+   - No extra spaces or quotes
+
+5. **Test token locally**:
+   ```bash
+   export NPM_TOKEN="your_token_here"
+   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+   npm whoami  # Should show your username
+   npm publish --dry-run  # Test publish (won't actually publish)
+   ```
+
+6. **Regenerate token if needed**:
+   - Delete old token from npmjs.com
+   - Create new Automation token
+   - Update GitHub Secret with new token
+
 ### Release not triggering
 
 1. **Check branch**: Ensure you're pushing to `main` or `master`
@@ -93,6 +160,7 @@ To trigger automatic releases, use [Conventional Commits](https://www.convention
 2. **Check package name**: Verify `@atif910/analytics-tracker` scope access
 3. **Check version**: Ensure version doesn't already exist on npm
 4. **Check logs**: View detailed logs in GitHub Actions
+5. **Check token validity**: Token might be expired, regenerate if needed
 
 ### Manual Release (if needed)
 

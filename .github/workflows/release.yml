@@ -30,7 +30,6 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
@@ -48,6 +47,33 @@ jobs:
           test -f dist/index.esm.js
           test -f dist/index.d.ts
           test -f dist/index.d.cts
+
+      - name: Configure npm authentication
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Check if token is set
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "❌ NPM_TOKEN secret is not set in GitHub repository settings"
+            echo "Please go to Settings → Secrets and variables → Actions and add NPM_TOKEN"
+            exit 1
+          fi
+          
+          # Configure npm authentication
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          npm config set registry https://registry.npmjs.org/
+          chmod 600 ~/.npmrc
+          
+          echo "✅ npm authentication configured"
+
+      - name: Verify npm authentication
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Test npm authentication
+          npm whoami || (echo "❌ npm authentication failed!" && echo "Check:" && echo "1. NPM_TOKEN is set in GitHub Secrets" && echo "2. Token has publish permissions" && echo "3. Token is valid and not expired" && exit 1)
+          echo "✅ npm authentication successful"
+          npm whoami
 
       - name: Release
         env:
