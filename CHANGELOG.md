@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/switch-org/analytics-tracker/compare/v1.5.0...v1.6.0) (2025-11-24)
+
+
+### Features
+
+* update permissions ([553d9be](https://github.com/switch-org/analytics-tracker/commit/553d9be405d7609e2cb9853ff16535cf4b1b9e66))
+
 # [1.5.0](https://github.com/switch-org/analytics-tracker/compare/v1.4.0...v1.5.0) (2025-11-24)
 
 
