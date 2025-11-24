@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/switch-org/analytics-tracker/compare/v1.6.0...v1.7.0) (2025-11-24)
+
+
+### Features
+
+* updated build ([4778be5](https://github.com/switch-org/analytics-tracker/commit/4778be5c9f41a034593c02a97c70076c480dd1ed))
+
 # [1.6.0](https://github.com/switch-org/analytics-tracker/compare/v1.5.0...v1.6.0) (2025-11-24)
 
 
