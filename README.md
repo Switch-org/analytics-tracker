@@ -13,13 +13,15 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 - 🔍 **Device Detection**: Automatically detects device type, OS, browser, model, brand, and hardware specs using User-Agent Client Hints
 - 🌐 **Network Detection**: Identifies WiFi, Cellular, Hotspot, Ethernet connections with quality metrics
 - 📍 **Location Tracking**: 
-  - **Automatic IP-based location** (no permission required) - works immediately
-  - GPS location with consent management (MSISDN-based consent)
+  - **IP-based location** - Requires user consent (privacy-compliant)
+  - **GPS location** - Requires explicit user consent and browser permission
   - Includes public IP address, country, city, region, timezone
   - Automatic fallback from GPS to IP when GPS unavailable
+  - Consent management utilities included
 - 🎯 **Attribution Tracking**: UTM parameters, referrer tracking, first/last touch attribution
 - 📊 **IP Geolocation**: Client-side and server-side IP-based location detection utilities
-- 🔒 **Privacy-First**: Location consent management, automatic IP fallback
+- 🔒 **Privacy-First**: User consent required for location tracking (GPS & IP), consent management utilities
+- 🎯 **Custom Event Tracking**: Firebase/Google Analytics-style event tracking with automatic context collection
 - ⚡ **Lightweight**: Zero runtime dependencies (except React)
 - 📦 **TypeScript**: Fully typed with comprehensive type definitions
 - 🎨 **Framework Agnostic Core**: Core detectors work without React
@@ -169,7 +171,14 @@ function App() {
 import { useAnalytics } from 'user-analytics-tracker';
 
 function MyApp() {
-  const { sessionId, networkInfo, deviceInfo, location, logEvent } = useAnalytics({
+  const { 
+    sessionId, 
+    networkInfo, 
+    deviceInfo, 
+    location, 
+    trackEvent, 
+    trackPageView 
+  } = useAnalytics({
     autoSend: true,
     config: {
       // Use your own backend server (full URL)
@@ -179,11 +188,24 @@ function MyApp() {
     },
   });
 
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView();
+  }, [trackPageView]);
+
+  const handleButtonClick = async () => {
+    // Track custom event (Firebase/GA-style)
+    await trackEvent('button_click', {
+      button_name: 'signup',
+      button_location: 'header'
+    });
+  };
+
   return (
     <div>
       <p>Device: {deviceInfo?.deviceBrand} {deviceInfo?.deviceModel}</p>
       <p>Network: {networkInfo?.type}</p>
-      <button onClick={() => logEvent({ action: 'button_click' })}>
+      <button onClick={handleButtonClick}>
         Track Click
       </button>
     </div>
@@ -264,6 +286,8 @@ interface UseAnalyticsReturn {
   pageVisits: number;
   interactions: number;
   logEvent: (customData?: Record<string, any>) => Promise<void>;
+  trackEvent: (eventName: string, parameters?: Record<string, any>) => Promise<void>;
+  trackPageView: (pageName?: string, parameters?: Record<string, any>) => Promise<void>;
   incrementInteraction: () => void;
   refresh: () => Promise<{
     net: NetworkInfo;
@@ -527,12 +551,46 @@ class MyAnalyticsService extends AnalyticsService {
 }
 ```
 
-### Manual Event Tracking
+### Custom Event Tracking (Firebase/GA-style)
+
+Track custom events with automatic context collection:
+
+```typescript
+const { trackEvent, trackPageView } = useAnalytics();
+
+// Track button click
+await trackEvent('button_click', {
+  button_name: 'signup',
+  button_location: 'header',
+  button_color: 'blue'
+});
+
+// Track purchase
+await trackEvent('purchase', {
+  transaction_id: 'T12345',
+  value: 29.99,
+  currency: 'USD',
+  items: [
+    { id: 'item1', name: 'Product 1', price: 29.99 }
+  ]
+});
+
+// Track page views
+await trackPageView('/dashboard', {
+  page_title: 'Dashboard',
+  user_type: 'premium'
+});
+
+// Track current page view
+await trackPageView();
+```
+
+### Manual Event Tracking (Legacy)
 
 ```typescript
 const { logEvent, incrementInteraction } = useAnalytics();
 
-// Log custom event
+// Log custom event with full control
 await logEvent({
   eventType: 'purchase',
   productId: '123',

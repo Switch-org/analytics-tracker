@@ -569,13 +569,176 @@ const {
   attribution,      // AttributionInfo | null - UTM params, referrer
   pageVisits,       // number - Total page visits
   interactions,     // number - User interaction count
-  logEvent,         // Function to log custom events
+  logEvent,         // Function to log custom events (legacy)
+  trackEvent,       // Function to track custom events (Firebase/GA-style)
+  trackPageView,    // Function to track page views
   incrementInteraction, // Function to increment interaction counter
   refresh,          // Function to refresh all detectors
 } = useAnalytics();
 ```
 
-### Logging Custom Events
+### Custom Event Tracking (Firebase/GA-style)
+
+Track custom events with automatic context collection (device, network, location):
+
+```tsx
+function ProductPage({ productId }: { productId: string }) {
+  const { trackEvent, trackPageView } = useAnalytics();
+
+  // Track page view when component mounts
+  useEffect(() => {
+    trackPageView(`/product/${productId}`, {
+      page_title: 'Product Details',
+      product_category: 'electronics'
+    });
+  }, [productId, trackPageView]);
+
+  const handlePurchase = async () => {
+    // Track purchase event - automatically includes device, network, location context
+    await trackEvent('purchase', {
+      transaction_id: `T${Date.now()}`,
+      value: 99.99,
+      currency: 'USD',
+      product_id: productId,
+      items: [
+        { id: productId, name: 'Product Name', price: 99.99 }
+      ]
+    });
+    
+    // Continue with purchase logic
+    // ...
+  };
+
+  const handleAddToCart = async () => {
+    // Track add to cart event
+    await trackEvent('add_to_cart', {
+      product_id: productId,
+      quantity: 1,
+      value: 99.99
+    });
+  };
+
+  const handleButtonClick = async (buttonName: string) => {
+    // Track button clicks
+    await trackEvent('button_click', {
+      button_name: buttonName,
+      button_location: 'product_page',
+      product_id: productId
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={() => handleButtonClick('add_to_cart')}>Add to Cart</button>
+      <button onClick={handleAddToCart}>Add to Cart (Tracked)</button>
+      <button onClick={handlePurchase}>Buy Now</button>
+    </div>
+  );
+}
+```
+
+### Page View Tracking
+
+Track page views automatically or manually:
+
+```tsx
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAnalytics } from 'user-analytics-tracker';
+
+function PageViewTracker() {
+  const location = useLocation();
+  const { trackPageView } = useAnalytics();
+
+  useEffect(() => {
+    // Track page view on route change
+    trackPageView(location.pathname, {
+      page_title: document.title,
+      referrer: document.referrer
+    });
+  }, [location, trackPageView]);
+
+  return null;
+}
+
+// Use in your app
+function App() {
+  return (
+    <Router>
+      <PageViewTracker />
+      <Routes>
+        {/* Your routes */}
+      </Routes>
+    </Router>
+  );
+}
+```
+
+### Event Tracking Examples
+
+```tsx
+function AnalyticsExamples() {
+  const { trackEvent, trackPageView } = useAnalytics();
+
+  // E-commerce events
+  const trackPurchase = async (order: any) => {
+    await trackEvent('purchase', {
+      transaction_id: order.id,
+      value: order.total,
+      currency: order.currency,
+      items: order.items,
+      payment_method: order.paymentMethod
+    });
+  };
+
+  // User engagement events
+  const trackSignUp = async (method: string) => {
+    await trackEvent('sign_up', {
+      method: method, // 'email', 'google', 'facebook'
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  const trackLogin = async () => {
+    await trackEvent('login', {
+      method: 'email'
+    });
+  };
+
+  // Content engagement
+  const trackVideoPlay = async (videoId: string) => {
+    await trackEvent('video_play', {
+      video_id: videoId,
+      video_title: 'Sample Video'
+    });
+  };
+
+  const trackArticleRead = async (articleId: string) => {
+    await trackEvent('article_read', {
+      article_id: articleId,
+      read_time: 120 // seconds
+    });
+  };
+
+  // Form interactions
+  const trackFormSubmit = async (formName: string) => {
+    await trackEvent('form_submit', {
+      form_name: formName,
+      form_location: window.location.pathname
+    });
+  };
+
+  return (
+    <div>
+      {/* Your components */}
+    </div>
+  );
+}
+```
+
+### Legacy Event Tracking (logEvent)
+
+For backward compatibility, you can still use `logEvent`:
 
 ```tsx
 function ProductPage({ productId }: { productId: string }) {
