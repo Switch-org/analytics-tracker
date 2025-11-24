@@ -70,12 +70,62 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # Test npm authentication
-          npm whoami || (echo "❌ npm authentication failed!" && echo "Check:" && echo "1. NPM_TOKEN is set in GitHub Secrets" && echo "2. Token has publish permissions" && echo "3. Token is valid and not expired" && exit 1)
+          NPM_USER=$(npm whoami 2>&1) || (echo "❌ npm authentication failed!" && echo "Check:" && echo "1. NPM_TOKEN is set in GitHub Secrets" && echo "2. Token has publish permissions" && echo "3. Token is valid and not expired" && exit 1)
           echo "✅ npm authentication successful"
-          npm whoami
+          echo "📦 Logged in as: $NPM_USER"
+          
+          # Check package ownership
+          PACKAGE_NAME="user-analytics-tracker"
+          echo "🔍 Checking package ownership for: $PACKAGE_NAME"
+          
+          # Try to check if package exists and who owns it
+          PACKAGE_INFO=$(npm view $PACKAGE_NAME maintainers 2>&1 || echo "package_not_found")
+          if [[ "$PACKAGE_INFO" == *"package_not_found"* ]] || [[ "$PACKAGE_INFO" == *"404"* ]]; then
+            echo "ℹ️  Package $PACKAGE_NAME doesn't exist yet - will be created on first publish"
+            echo "✅ Token user ($NPM_USER) will become the owner"
+          else
+            echo "📋 Package maintainers:"
+            echo "$PACKAGE_INFO"
+            echo ""
+            echo "⚠️  Make sure $NPM_USER is listed as a maintainer, or has publish access"
+          fi
+          
+          # Verify token can publish (dry run)
+          echo "🧪 Testing publish permissions (dry run)..."
+          npm publish --dry-run --access public || echo "⚠️  Dry run completed with warnings"
+
+      - name: Check package access before release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          PACKAGE_NAME="user-analytics-tracker"
+          NPM_USER=$(npm whoami)
+          echo "📦 Checking access to package: $PACKAGE_NAME"
+          echo "👤 npm user: $NPM_USER"
+          
+          # Check if package exists
+          if npm view $PACKAGE_NAME version > /dev/null 2>&1; then
+            echo "✅ Package exists"
+            echo "📋 Checking maintainers..."
+            MAINTAINERS=$(npm view $PACKAGE_NAME maintainers 2>&1 || echo "")
+            echo "$MAINTAINERS"
+            
+            if [[ "$MAINTAINERS" == *"$NPM_USER"* ]]; then
+              echo "✅ $NPM_USER is a maintainer - can publish"
+            else
+              echo "❌ ERROR: $NPM_USER is NOT a maintainer of $PACKAGE_NAME"
+              echo "💡 Solution: Add yourself as maintainer: npm owner add $NPM_USER $PACKAGE_NAME"
+              echo "💡 Or use NPM_TOKEN from the package owner's account"
+              exit 1
+            fi
+          else
+            echo "ℹ️  Package doesn't exist yet - will be created on first publish"
+            echo "✅ $NPM_USER will become the owner"
+          fi
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm run release
+        continue-on-error: false
