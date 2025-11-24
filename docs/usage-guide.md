@@ -1006,27 +1006,108 @@ console.log(attribution.lastTouch);      // Last touchpoint data
 
 ### Location Detection
 
+Location detection supports both GPS and IP-based geolocation. **IP-based location works automatically without user permission**, making it perfect for immediate location tracking.
+
+#### Automatic IP-Based Location (No Permission Required)
+
+```typescript
+import { LocationDetector } from '@atif910/analytics-tracker';
+
+// Method 1: Get IP-based location only (fast, automatic, no permission needed)
+const ipLocation = await LocationDetector.detectIPOnly();
+console.log('IP Address:', ipLocation.ip);           // "203.0.113.42"
+console.log('Country:', ipLocation.country);         // "United States"
+console.log('City:', ipLocation.city);               // "San Francisco"
+console.log('Coordinates:', ipLocation.lat, ipLocation.lon);
+console.log('Source:', ipLocation.source);           // "ip"
+```
+
+#### Standard Detection (IP-First, GPS Fallback)
+
 ```typescript
 import { LocationDetector, hasLocationConsent, checkAndSetLocationConsent } from '@atif910/analytics-tracker';
 
-// Check if user has granted consent
-if (hasLocationConsent()) {
-  // Detect location
-  const location = await LocationDetector.detect();
-  
-  if (location.permission === 'granted' && location.lat && location.lon) {
-    console.log('Latitude:', location.lat);
-    console.log('Longitude:', location.lon);
-    console.log('Accuracy:', location.accuracy, 'meters');
-    console.log('Source:', location.source); // "gps" | "ip" | "unknown"
-  }
+// Standard detection: Uses IP automatically if no consent, tries GPS if consent granted
+const location = await LocationDetector.detect();
+
+// Location includes IP address when using IP-based detection
+if (location.source === 'ip') {
+  console.log('IP Address:', location.ip);           // Public IP address
+  console.log('Country:', location.country);         // Country name
+  console.log('City:', location.city);               // City name
+  console.log('Region:', location.region);            // Region/state
+  console.log('Timezone:', location.timezone);       // Timezone
 }
 
-// Grant consent when user enters MSISDN
+// GPS location (when consent granted)
+if (location.source === 'gps') {
+  console.log('Latitude:', location.lat);
+  console.log('Longitude:', location.lon);
+  console.log('Accuracy:', location.accuracy, 'meters');
+}
+
+console.log('Source:', location.source); // "gps" | "ip" | "unknown"
+console.log('Permission:', location.permission); // "granted" | "denied" | "prompt" | "unsupported"
+```
+
+#### Automatic Consent (GPS with Auto-Fallback)
+
+```typescript
+// Method 2: Auto-consent (tries GPS first, automatically falls back to IP)
+// Automatically grants consent and tries GPS, falls back to IP if GPS fails
+const location = await LocationDetector.detectWithAutoConsent();
+
+// This method:
+// 1. Automatically grants location consent
+// 2. Tries GPS location (if available)
+// 3. Falls back to IP-based location if GPS fails/denied/unavailable
+// 4. Returns IP location with full details (IP, country, city, etc.)
+```
+
+#### Grant Consent for GPS
+
+```typescript
+// Grant consent when user enters MSISDN (for GPS tracking)
 const consentGranted = checkAndSetLocationConsent('+1234567890');
 if (consentGranted) {
-  // Location will be available on next detection
+  // Location will try GPS first, fall back to IP if GPS fails
   const location = await LocationDetector.detect();
+}
+```
+
+#### Get Public IP Address
+
+```typescript
+import { getPublicIP } from '@atif910/analytics-tracker';
+
+// Get just the public IP address (no location data)
+const ip = await getPublicIP();
+console.log('Your IP:', ip); // "203.0.113.42"
+```
+
+#### Location Info Structure
+
+```typescript
+interface LocationInfo {
+  // Coordinates (available for both GPS and IP)
+  lat?: number | null;
+  lon?: number | null;
+  
+  // GPS-specific
+  accuracy?: number | null;  // GPS accuracy in meters (GPS only)
+  
+  // IP-specific (available when source is "ip")
+  ip?: string | null;         // Public IP address
+  country?: string;           // Country name
+  countryCode?: string;        // ISO country code
+  city?: string;              // City name
+  region?: string;            // Region/state
+  timezone?: string;          // Timezone
+  
+  // Metadata
+  permission: 'granted' | 'denied' | 'prompt' | 'unsupported';
+  source: 'gps' | 'ip' | 'unknown';
+  ts?: string;                // Timestamp
 }
 ```
 
@@ -1334,7 +1415,22 @@ When analytics are sent to your backend, you'll receive this structure:
     "lon": -74.0060,
     "accuracy": 10,
     "permission": "granted",
-    "source": "gps"
+    "source": "gps",
+    "ts": "2024-01-20T10:30:00.000Z"
+  },
+  // OR for IP-based location:
+  "location": {
+    "lat": 40.7128,
+    "lon": -74.0060,
+    "ip": "203.0.113.42",
+    "country": "United States",
+    "countryCode": "US",
+    "city": "New York",
+    "region": "New York",
+    "timezone": "America/New_York",
+    "permission": "granted",
+    "source": "ip",
+    "ts": "2024-01-20T10:30:00.000Z"
   },
   "attribution": {
     "landingUrl": "https://example.com/?utm_source=google",
@@ -1377,10 +1473,14 @@ curl -X POST http://localhost:3000/api/analytics \
 
 ### Location not working
 
-1. **Check consent**: Ensure `checkAndSetLocationConsent()` is called with MSISDN
-2. **Check browser permissions**: User must grant location permission
-3. **HTTPS required**: GPS location requires HTTPS (except localhost)
-4. **Check permission status**: `location.permission` will show status
+1. **IP-based location (automatic)**: Use `LocationDetector.detectIPOnly()` - works without permission
+2. **GPS location**: 
+   - Check consent: Ensure `checkAndSetLocationConsent()` is called with MSISDN
+   - Check browser permissions: User must grant location permission
+   - HTTPS required: GPS location requires HTTPS (except localhost)
+   - Check permission status: `location.permission` will show status
+3. **Automatic fallback**: Standard `detect()` automatically uses IP if GPS fails
+4. **IP address not showing**: Ensure you're using IP-based location (`source: "ip"`)
 
 ### Device info not detected
 

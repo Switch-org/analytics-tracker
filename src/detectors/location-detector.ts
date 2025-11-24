@@ -1,9 +1,10 @@
 import type { LocationInfo } from '../types';
-import { hasLocationConsent } from '../utils/location-consent';
+import { hasLocationConsent, setLocationConsentGranted } from '../utils/location-consent';
 
 /**
  * Location Detector
  * Detects GPS location with consent management, falls back to IP-based location API
+ * IP-based location works automatically without user permission
  */
 export class LocationDetector {
   private static locationFetchingRef: { current: boolean } = { current: false };
@@ -13,8 +14,41 @@ export class LocationDetector {
   private static lastIPLocationRef: { current: LocationInfo | null } = { current: null };
 
   /**
+   * Detect location using IP-based API only (no GPS, no permission needed)
+   * Fast and automatic - works immediately without user interaction
+   */
+  static async detectIPOnly(): Promise<LocationInfo> {
+    // Return cached IP location if available
+    if (this.lastIPLocationRef.current) {
+      return this.lastIPLocationRef.current;
+    }
+
+    // Get IP-based location (no permission required)
+    const ipLocation = await this.getIPBasedLocation();
+    this.lastLocationRef.current = ipLocation;
+    return ipLocation;
+  }
+
+  /**
+   * Detect location with automatic consent granted
+   * Tries GPS first (if available), then falls back to IP-based location
+   * Automatically sets location consent to bypass permission checks
+   */
+  static async detectWithAutoConsent(): Promise<LocationInfo> {
+    // Automatically grant location consent
+    setLocationConsentGranted();
+    
+    // Clear cache to force fresh detection
+    this.lastLocationRef.current = null;
+    
+    // Now detect with consent granted
+    return this.detect();
+  }
+
+  /**
    * Get browser GPS location
    * Respects location consent (set via MSISDN entry)
+   * Falls back to IP-based location automatically if GPS fails
    */
   static async detect(): Promise<LocationInfo> {
     // Check if user has granted location consent via MSISDN entry
@@ -81,13 +115,14 @@ export class LocationDetector {
     }
 
     // Helper with timeout so we never block forever
-    const withTimeout = <T,>(p: Promise<T>, ms = 5000) =>
+    // Reduced timeout to 2 seconds for faster fallback to IP
+    const withTimeout = <T,>(p: Promise<T>, ms = 2000) =>
       new Promise<T>((resolve) => {
         let settled = false;
         const t = setTimeout(async () => {
           if (!settled) {
             settled = true;
-            // If GPS times out, fallback to IP-based location
+            // If GPS times out, fallback to IP-based location immediately
             console.log('[Location] GPS timeout, falling back to IP-based location API...');
             try {
               const ipLocation = await this.getIPBasedLocation();
@@ -184,45 +219,50 @@ export class LocationDetector {
           },
           {
             enableHighAccuracy: false,
-            timeout: 5000, // Increased timeout to 5 seconds
+            timeout: 2000, // Reduced to 2 seconds for faster fallback to IP
             maximumAge: 60000, // Cache for 60 seconds
           }
         );
         return;
       }
 
-      // No consent yet - check permission state first
+      // No consent yet - use IP-based location as primary (no permission needed)
+      // This provides automatic location without user interaction
+      console.log('[Location] No consent granted, using IP-based location (automatic, no permission needed)...');
       this.locationFetchingRef.current = true;
-
-      (navigator as any).permissions?.query({ name: 'geolocation' as any })
-        .then((perm: any) => {
-          const base: Partial<LocationInfo> = {
-            permission: perm?.state || 'prompt',
-          };
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              this.locationFetchingRef.current = false;
-              const locationResult: LocationInfo = {
-                lat: pos.coords.latitude,
-                lon: pos.coords.longitude,
-                accuracy: isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null,
-                permission: 'granted',
-                source: 'gps',
-                ts: new Date(pos.timestamp || Date.now()).toISOString(),
+      
+      // Use IP-based location (no permission needed, works automatically)
+      this.getIPBasedLocation()
+        .then((ipLocation) => {
+          this.locationFetchingRef.current = false;
+          this.lastLocationRef.current = ipLocation;
+          resolve(ipLocation);
+        })
+        .catch((_ipError) => {
+          this.locationFetchingRef.current = false;
+          // If IP fails, try GPS as last resort (but it will likely prompt)
+          (navigator as any).permissions?.query({ name: 'geolocation' as any })
+            .then((perm: any) => {
+              const base: Partial<LocationInfo> = {
+                permission: perm?.state || 'prompt',
               };
-              this.lastLocationRef.current = locationResult;
-              resolve(locationResult);
-            },
-            () => {
-              this.locationFetchingRef.current = false;
-              // Fallback to IP-based location when GPS is not available/denied
-              console.log('[Location] GPS not available, falling back to IP-based location API...');
-              this.getIPBasedLocation()
-                .then((ipLocation) => {
-                  this.lastLocationRef.current = ipLocation;
-                  resolve(ipLocation);
-                })
-                .catch((ipError) => {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  this.locationFetchingRef.current = false;
+                  const locationResult: LocationInfo = {
+                    lat: pos.coords.latitude,
+                    lon: pos.coords.longitude,
+                    accuracy: isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null,
+                    permission: 'granted',
+                    source: 'gps',
+                    ts: new Date(pos.timestamp || Date.now()).toISOString(),
+                  };
+                  this.lastLocationRef.current = locationResult;
+                  resolve(locationResult);
+                },
+                () => {
+                  this.locationFetchingRef.current = false;
+                  // Both IP and GPS failed
                   const locationResult: LocationInfo = {
                     ...base,
                     source: 'unknown',
@@ -230,56 +270,30 @@ export class LocationDetector {
                   } as LocationInfo;
                   this.lastLocationRef.current = locationResult;
                   resolve(locationResult);
-                });
-            },
-            {
-              enableHighAccuracy: false,
-              timeout: 2500,
-              maximumAge: 60000,
-            }
-          );
-        })
-        .catch(() => {
-          // Permissions API not available; still try getCurrentPosition
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
+                },
+                {
+                  enableHighAccuracy: false,
+                  timeout: 2000,
+                  maximumAge: 60000,
+                }
+              );
+            })
+            .catch(() => {
+              // Permissions API not available; GPS failed, return unknown
               this.locationFetchingRef.current = false;
               const locationResult: LocationInfo = {
-                lat: pos.coords.latitude,
-                lon: pos.coords.longitude,
-                accuracy: isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null,
-                permission: 'granted',
-                source: 'gps',
-                ts: new Date(pos.timestamp || Date.now()).toISOString(),
+                source: 'unknown',
+                permission: 'prompt',
+                ts: new Date().toISOString(),
               };
               this.lastLocationRef.current = locationResult;
               resolve(locationResult);
-            },
-            () => {
-              this.locationFetchingRef.current = false;
-              // Fallback to IP-based location when GPS fails
-              console.log('[Location] GPS failed, falling back to IP-based location API...');
-              this.getIPBasedLocation()
-                .then((ipLocation) => {
-                  this.lastLocationRef.current = ipLocation;
-                  resolve(ipLocation);
-                })
-                .catch((ipError) => {
-                  const locationResult: LocationInfo = {
-                    source: 'unknown',
-                    permission: 'prompt',
-                    ts: new Date().toISOString(),
-                  };
-                  this.lastLocationRef.current = locationResult;
-                  resolve(locationResult);
-                });
-            },
-            { enableHighAccuracy: false, timeout: 2500, maximumAge: 60000 }
-          );
+            });
         });
     });
 
-    return withTimeout(ask, 5000);
+    // Reduced overall timeout to 2 seconds for faster IP fallback
+    return withTimeout(ask, 2000);
   }
 
   /**
@@ -363,13 +377,20 @@ export class LocationDetector {
         permission: 'granted', // IP location doesn't require permission
         source: 'ip',
         ts: new Date().toISOString(),
+        ip: data.query || null, // Public IP address
+        country: data.country || undefined,
+        countryCode: data.countryCode || undefined,
+        city: data.city || undefined,
+        region: data.regionName || data.region || undefined,
+        timezone: data.timezone || undefined,
       };
 
       console.log('[Location] IP-based location obtained:', {
+        ip: locationResult.ip,
         lat: locationResult.lat,
         lon: locationResult.lon,
-        city: data.city,
-        country: data.country,
+        city: locationResult.city,
+        country: locationResult.country,
       });
 
       this.lastIPLocationRef.current = locationResult;

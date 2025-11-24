@@ -12,10 +12,14 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 
 - 🔍 **Device Detection**: Automatically detects device type, OS, browser, model, brand, and hardware specs using User-Agent Client Hints
 - 🌐 **Network Detection**: Identifies WiFi, Cellular, Hotspot, Ethernet connections with quality metrics
-- 📍 **Location Tracking**: GPS location with consent management (MSISDN-based consent)
+- 📍 **Location Tracking**: 
+  - **Automatic IP-based location** (no permission required) - works immediately
+  - GPS location with consent management (MSISDN-based consent)
+  - Includes public IP address, country, city, region, timezone
+  - Automatic fallback from GPS to IP when GPS unavailable
 - 🎯 **Attribution Tracking**: UTM parameters, referrer tracking, first/last touch attribution
-- 📊 **IP Geolocation**: Server-side IP-based location detection (helper utilities)
-- 🔒 **Privacy-First**: Location consent management, no tracking without user action
+- 📊 **IP Geolocation**: Client-side and server-side IP-based location detection utilities
+- 🔒 **Privacy-First**: Location consent management, automatic IP fallback
 - ⚡ **Lightweight**: Zero runtime dependencies (except React)
 - 📦 **TypeScript**: Fully typed with comprehensive type definitions
 - 🎨 **Framework Agnostic Core**: Core detectors work without React
@@ -209,9 +213,15 @@ console.log(device.deviceBrand, device.deviceModel);
 const attribution = AttributionDetector.detect();
 console.log(attribution.utm_source);
 
-// Detect location (with consent check)
+// Detect location (automatic IP-based if no consent, GPS if consent granted)
 const location = await LocationDetector.detect();
 console.log(location.lat, location.lon);
+console.log(location.ip); // Public IP (when using IP-based location)
+console.log(location.country, location.city); // Location details
+
+// Or get IP-based location only (no permission needed)
+const ipLocation = await LocationDetector.detectIPOnly();
+console.log(ipLocation.ip, ipLocation.country, ipLocation.city);
 ```
 
 ## 📚 API Reference
@@ -305,7 +315,7 @@ const device = await DeviceDetector.detect();
 
 #### `LocationDetector.detect()`
 
-Detects GPS location (respects consent).
+Detects location (IP-first when no consent, GPS when consent granted). Automatically falls back to IP if GPS fails.
 
 ```typescript
 const location = await LocationDetector.detect();
@@ -313,11 +323,50 @@ const location = await LocationDetector.detect();
 // {
 //   lat?: number | null;
 //   lon?: number | null;
-//   accuracy?: number | null;
+//   accuracy?: number | null;  // GPS only
 //   permission: 'granted' | 'denied' | 'prompt' | 'unsupported';
 //   source: 'gps' | 'ip' | 'unknown';
 //   ts?: string;
+//   // IP-based location includes:
+//   ip?: string | null;         // Public IP address
+//   country?: string;           // Country name
+//   countryCode?: string;       // ISO country code
+//   city?: string;              // City name
+//   region?: string;            // Region/state
+//   timezone?: string;          // Timezone
 // }
+```
+
+#### `LocationDetector.detectIPOnly()`
+
+Get IP-based location only (fast, automatic, no permission needed).
+
+```typescript
+const location = await LocationDetector.detectIPOnly();
+// Returns IP-based location with IP address, country, city, coordinates
+// Works immediately without user permission
+```
+
+#### `LocationDetector.detectWithAutoConsent()`
+
+Automatically grants consent and tries GPS, falls back to IP if GPS fails.
+
+```typescript
+const location = await LocationDetector.detectWithAutoConsent();
+// 1. Automatically grants location consent
+// 2. Tries GPS location (if available)
+// 3. Falls back to IP-based location if GPS fails/denied/unavailable
+```
+
+#### `getPublicIP()`
+
+Get just the public IP address (utility function).
+
+```typescript
+import { getPublicIP } from '@atif910/analytics-tracker';
+
+const ip = await getPublicIP();
+console.log(ip); // "203.0.113.42"
 ```
 
 #### `AttributionDetector.detect()`
@@ -395,16 +444,31 @@ setLocationConsentGranted();
 clearLocationConsent();
 ```
 
-#### IP Geolocation (Server-Side)
+#### IP Geolocation Utilities
+
+**Client-Side: Get Public IP**
+
+```typescript
+import { getPublicIP } from '@atif910/analytics-tracker';
+
+// Get just the public IP address (no location data)
+const ip = await getPublicIP();
+console.log('Your IP:', ip); // "203.0.113.42"
+```
+
+**Server-Side: IP Location from Request**
 
 ```typescript
 import { getIPLocation, getIPFromRequest } from '@atif910/analytics-tracker';
 
 // In your API route (Next.js example)
 export async function POST(req: Request) {
+  // Extract IP from request headers
   const ip = getIPFromRequest(req);
+  
+  // Get location data from IP
   const location = await getIPLocation(ip);
-  // location contains country, region, city, lat, lon, etc.
+  // location contains: country, region, city, lat, lon, timezone, isp, etc.
 }
 ```
 
