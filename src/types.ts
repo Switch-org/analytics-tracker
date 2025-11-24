@@ -42,6 +42,12 @@ export interface LocationInfo {
   permission?: 'granted' | 'denied' | 'prompt' | 'unsupported';
   source: 'gps' | 'ip' | 'unknown';
   ts?: string;
+  ip?: string | null; // Public IP address (when available)
+  country?: string;
+  countryCode?: string;
+  city?: string;
+  region?: string;
+  timezone?: string;
 }
 
 export interface AttributionInfo {

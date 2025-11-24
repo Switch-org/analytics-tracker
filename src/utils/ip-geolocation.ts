@@ -7,6 +7,57 @@ import type { IPLocation } from '../types';
  */
 
 /**
+ * Get public IP address using ip-api.com
+ * Free tier: 45 requests/minute, no API key required
+ * 
+ * @returns Promise<string | null> - The public IP address, or null if unavailable
+ * 
+ * @example
+ * ```typescript
+ * const ip = await getPublicIP();
+ * console.log('Your IP:', ip); // e.g., "203.0.113.42"
+ * ```
+ */
+export async function getPublicIP(): Promise<string | null> {
+  // Skip if we're in an environment without fetch (SSR)
+  if (typeof fetch === 'undefined') {
+    return null;
+  }
+
+  try {
+    // Call ip-api.com without IP parameter - it auto-detects user's IP
+    // Using HTTPS endpoint for better security
+    const response = await fetch('https://ip-api.com/json/?fields=status,message,query', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    // ip-api.com returns status field
+    if (data.status === 'fail') {
+      return null;
+    }
+
+    return data.query || null;
+  } catch (error: any) {
+    // Silently fail - don't break user experience
+    if (error.name !== 'AbortError') {
+      console.warn('[IP Geolocation] Error fetching public IP:', error.message);
+    }
+    return null;
+  }
+}
+
+/**
  * Get location from IP address using ip-api.com
  * Free tier: 45 requests/minute, no API key required
  *

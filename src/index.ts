@@ -49,7 +49,7 @@ export {
   checkAndSetLocationConsent,
 } from './utils/location-consent';
 
-export { getIPLocation, getIPFromRequest } from './utils/ip-geolocation';
+export { getIPLocation, getIPFromRequest, getPublicIP } from './utils/ip-geolocation';
 
 // Default export for convenience
 export { useAnalytics as default } from './hooks/useAnalytics';

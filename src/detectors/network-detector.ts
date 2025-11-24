@@ -50,51 +50,84 @@ export class NetworkDetector {
           type = connectionType as NetworkType;
       }
     }
-    // Method 2: Use effectiveType to infer
-    else if (c.effectiveType) {
-      const effType = c.effectiveType.toLowerCase();
-      if (['slow-2g', '2g', '3g', '4g'].includes(effType)) {
-        type = 'cellular';
-      } else {
-        type = 'wifi';
-      }
-    }
-    // Method 3: Heuristic-based detection using multiple signals
+    // Method 2: Heuristic-based detection using multiple signals
+    // Note: effectiveType indicates speed/quality, NOT connection type
+    // A WiFi connection can have effectiveType "4g" if it's fast
     else {
       const downlink = c.downlink || 0;
       const rtt = c.rtt || 0;
       const saveData = c.saveData || false;
+      const effectiveType = c.effectiveType?.toLowerCase() || '';
 
       const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isDesktop = !isMobileDevice;
 
+      // Data saver mode strongly suggests cellular
       if (saveData) {
         type = 'cellular';
-      } else if (isMobileDevice) {
-        // Mobile device: check if it's likely hotspot
-        if (downlink > 0 && downlink < 1 && rtt > 300) {
-          type = 'hotspot';
-        } else if (downlink > 10) {
-          // Fast connection on mobile = likely wifi
+      }
+      // Desktop/laptop devices are almost always WiFi or Ethernet (not cellular)
+      else if (isDesktop) {
+        // Very high speeds (>50 Mbps) are likely Ethernet
+        // Medium-high speeds (10-50 Mbps) are likely WiFi
+        // Lower speeds could be WiFi or Ethernet depending on connection quality
+        if (downlink > 50) {
+          type = 'ethernet';
+        } else if (downlink > 5) {
           type = 'wifi';
-        } else if (downlink > 1) {
-          // Medium speed = could be mobile data or hotspot
-          // Check RTT: hotspots often have higher latency
-          type = rtt > 200 ? 'hotspot' : 'cellular';
+        } else {
+          // Low speed on desktop - likely poor WiFi, but still WiFi
+          type = 'wifi';
+        }
+      }
+      // Mobile device: need to distinguish between WiFi, cellular, and hotspot
+      else {
+        // Very fast connection (>20 Mbps) on mobile = almost certainly WiFi
+        if (downlink > 20) {
+          type = 'wifi';
+        }
+        // Fast connection (10-20 Mbps) = likely WiFi (even with moderate RTT)
+        // WiFi can have RTT up to ~150ms depending on router/network quality
+        else if (downlink >= 10) {
+          type = 'wifi';
+        }
+        // Medium-fast connection (5-10 Mbps) with reasonable latency = likely WiFi
+        else if (downlink >= 5 && rtt < 150) {
+          type = 'wifi';
+        }
+        // Medium speed (1-5 Mbps) with low latency = likely WiFi
+        else if (downlink >= 1 && rtt < 100) {
+          type = 'wifi';
+        }
+        // Very slow connection with high latency = likely hotspot
+        else if (downlink > 0 && downlink < 1 && rtt > 300) {
+          type = 'hotspot';
+        }
+        // Medium speed with high latency = likely hotspot
+        else if (downlink >= 1 && downlink < 5 && rtt > 200) {
+          type = 'hotspot';
+        }
+        // Low speed with very high latency = likely hotspot
+        else if (downlink >= 1 && downlink < 3 && rtt > 250) {
+          type = 'hotspot';
+        }
+        // Otherwise, default to cellular for mobile devices
+        // But prefer WiFi if we have decent speed indicators
+        else if (downlink >= 3) {
+          type = 'wifi';
         } else {
           type = 'cellular';
         }
-      } else {
-        // Desktop/laptop: likely wifi or ethernet
-        type = downlink > 10 ? 'wifi' : 'ethernet';
       }
     }
 
     // Additional hotspot detection: Check for tethering indicators
     // Some browsers expose this via connection.type = 'wifi' but with mobile-like characteristics
-    if (type === 'wifi' && c.downlink && c.downlink < 5 && c.rtt && c.rtt > 200) {
+    // Only override if we're very confident it's a hotspot (very slow + high latency)
+    if (type === 'wifi' && c.downlink && c.downlink < 2 && c.rtt && c.rtt > 250) {
       const isMobileUA = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobileUA) {
-        // Mobile device with wifi but slow connection = likely hotspot
+        // Mobile device with wifi but very slow connection + high latency = likely hotspot
         type = 'hotspot';
       }
     }
