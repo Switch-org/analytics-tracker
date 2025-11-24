@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/switch-org/analytics-tracker/compare/v1.3.0...v1.3.1) (2025-11-24)
+
+
+### Bug Fixes
+
+* updated names ([c56f903](https://github.com/switch-org/analytics-tracker/commit/c56f903b9360f2dc2492e5114667dc240cca9e0c))
+
 # [1.3.0](https://github.com/switch-org/analytics-tracker/compare/v1.2.0...v1.3.0) (2025-11-24)
 
 
