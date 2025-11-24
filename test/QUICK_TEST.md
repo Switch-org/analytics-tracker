@@ -66,7 +66,7 @@ npm run test:coverage
 ## ✅ Option 4: In Your React App
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function MyComponent() {
   const { trackEvent, trackPageView } = useAnalytics({

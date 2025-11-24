@@ -1,6 +1,6 @@
 # Usage Guide
 
-This comprehensive guide shows you exactly how to use `@atif910/analytics-tracker` in your applications. From installation to advanced use cases, everything is covered here.
+This comprehensive guide shows you exactly how to use `user-analytics-tracker` in your applications. From installation to advanced use cases, everything is covered here.
 
 ## 📦 Table of Contents
 
@@ -23,13 +23,13 @@ This comprehensive guide shows you exactly how to use `@atif910/analytics-tracke
 
 ```bash
 # Using npm
-npm install @atif910/analytics-tracker react react-dom
+npm install user-analytics-tracker react react-dom
 
 # Using yarn
-yarn add @atif910/analytics-tracker react react-dom
+yarn add user-analytics-tracker react react-dom
 
 # Using pnpm
-pnpm add @atif910/analytics-tracker react react-dom
+pnpm add user-analytics-tracker react react-dom
 ```
 
 **Important**: React and React-DOM are peer dependencies and must be installed separately. The minimum React version required is 16.8.0 (for hooks support).
@@ -38,7 +38,7 @@ pnpm add @atif910/analytics-tracker react react-dom
 
 ```bash
 # Check if package is installed
-npm list @atif910/analytics-tracker
+npm list user-analytics-tracker
 ```
 
 ## 🔒 Self-Hosted Analytics - Configure Your Backend URL
@@ -62,7 +62,7 @@ You can configure your backend URL using the `apiEndpoint` option in three ways:
 Use a complete URL pointing to your backend server:
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   const analytics = useAnalytics({
@@ -173,7 +173,7 @@ VITE_ANALYTICS_API=https://api.yourcompany.com/analytics
 
 ```tsx
 // src/App.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   const analytics = useAnalytics({
@@ -193,7 +193,7 @@ function App() {
 // app/layout.tsx or app/components/AnalyticsProvider.tsx
 'use client';
 
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   useAnalytics({
@@ -211,7 +211,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // pages/_app.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function MyApp({ Component, pageProps }: any) {
   useAnalytics({
@@ -230,7 +230,7 @@ export default MyApp;
 
 ```tsx
 // src/main.tsx or src/App.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   useAnalytics({
@@ -247,7 +247,7 @@ function App() {
 ### Using AnalyticsService Directly (Without React)
 
 ```typescript
-import { AnalyticsService } from '@atif910/analytics-tracker';
+import { AnalyticsService } from 'user-analytics-tracker';
 
 // Configure your backend URL
 AnalyticsService.configure({
@@ -294,7 +294,7 @@ await AnalyticsService.trackUserJourney({
 
 ```tsx
 // App.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   const { deviceInfo, networkInfo, logEvent } = useAnalytics({
@@ -345,7 +345,7 @@ First, create an API endpoint to receive analytics data. Here are examples for d
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { getIPFromRequest, getIPLocation } from '@atif910/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from 'user-analytics-tracker';
 
 export async function POST(req: NextRequest) {
   try {
@@ -384,7 +384,7 @@ async function saveAnalyticsData(data: any) {
 ```javascript
 const express = require('express');
 const router = express.Router();
-const { getIPFromRequest, getIPLocation } = require('@atif910/analytics-tracker');
+const { getIPFromRequest, getIPLocation } = require('user-analytics-tracker');
 
 router.post('/api/analytics', async (req, res) => {
   try {
@@ -412,7 +412,7 @@ module.exports = router;
 
 ```typescript
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { getIPFromRequest, getIPLocation } from '@atif910/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from 'user-analytics-tracker';
 
 export async function analyticsRoute(
   request: FastifyRequest<{ Body: any }>,
@@ -441,7 +441,7 @@ export async function analyticsRoute(
 
 ```tsx
 // App.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   const { sessionId, deviceInfo, networkInfo, location, attribution, logEvent } = useAnalytics({
@@ -468,7 +468,7 @@ function App() {
 ```tsx
 // App.tsx
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 import { useEffect } from 'react';
 
 // Analytics provider component
@@ -523,7 +523,7 @@ function App() {
 ### Basic Hook Configuration
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function MyComponent() {
   const analytics = useAnalytics({
@@ -686,7 +686,7 @@ function NetworkMonitor() {
 ### Example 1: E-Commerce Product Tracking
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function ProductDetailPage({ product }: { product: Product }) {
   const { logEvent, deviceInfo, networkInfo } = useAnalytics({
@@ -787,7 +787,7 @@ function ContactForm() {
 ### Example 3: Hotspot Detection & Gating
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function HotspotGate({ children }: { children: React.ReactNode }) {
   const { networkInfo, logEvent } = useAnalytics({
@@ -833,7 +833,7 @@ function App() {
 ### Example 4: Location-Based Features
 
 ```tsx
-import { useAnalytics, checkAndSetLocationConsent } from '@atif910/analytics-tracker';
+import { useAnalytics, checkAndSetLocationConsent } from 'user-analytics-tracker';
 
 function LocationFeature() {
   const { location, logEvent, refresh } = useAnalytics({
@@ -924,7 +924,7 @@ You can use the detectors without React:
 ### Device Detection
 
 ```typescript
-import { DeviceDetector } from '@atif910/analytics-tracker';
+import { DeviceDetector } from 'user-analytics-tracker';
 
 // Detect device information
 const deviceInfo = await DeviceDetector.detect();
@@ -961,7 +961,7 @@ console.log(deviceInfo.type);            // "mobile" | "tablet" | "desktop"
 ### Network Detection
 
 ```typescript
-import { NetworkDetector } from '@atif910/analytics-tracker';
+import { NetworkDetector } from 'user-analytics-tracker';
 
 // Detect network type (synchronous)
 const networkInfo = NetworkDetector.detect();
@@ -985,7 +985,7 @@ if (typeof navigator !== 'undefined' && 'connection' in navigator) {
 ### Attribution Detection
 
 ```typescript
-import { AttributionDetector } from '@atif910/analytics-tracker';
+import { AttributionDetector } from 'user-analytics-tracker';
 
 // Detect attribution data (UTM parameters, referrer, etc.)
 const attribution = AttributionDetector.detect();
@@ -1011,7 +1011,7 @@ Location detection supports both GPS and IP-based geolocation. **IP-based locati
 #### Automatic IP-Based Location (No Permission Required)
 
 ```typescript
-import { LocationDetector } from '@atif910/analytics-tracker';
+import { LocationDetector } from 'user-analytics-tracker';
 
 // Method 1: Get IP-based location only (fast, automatic, no permission needed)
 const ipLocation = await LocationDetector.detectIPOnly();
@@ -1025,7 +1025,7 @@ console.log('Source:', ipLocation.source);           // "ip"
 #### Standard Detection (IP-First, GPS Fallback)
 
 ```typescript
-import { LocationDetector, hasLocationConsent, checkAndSetLocationConsent } from '@atif910/analytics-tracker';
+import { LocationDetector, hasLocationConsent, checkAndSetLocationConsent } from 'user-analytics-tracker';
 
 // Standard detection: Uses IP automatically if no consent, tries GPS if consent granted
 const location = await LocationDetector.detect();
@@ -1078,7 +1078,7 @@ if (consentGranted) {
 #### Get Public IP Address
 
 ```typescript
-import { getPublicIP } from '@atif910/analytics-tracker';
+import { getPublicIP } from 'user-analytics-tracker';
 
 // Get just the public IP address (no location data)
 const ip = await getPublicIP();
@@ -1114,7 +1114,7 @@ interface LocationInfo {
 ### Direct API Service Usage
 
 ```typescript
-import { AnalyticsService, NetworkDetector, DeviceDetector, AttributionDetector } from '@atif910/analytics-tracker';
+import { AnalyticsService, NetworkDetector, DeviceDetector, AttributionDetector } from 'user-analytics-tracker';
 
 // Configure the service
 AnalyticsService.configure({
@@ -1242,7 +1242,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 // app/components/AnalyticsProvider.tsx
 'use client';
 
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   useAnalytics({
@@ -1260,7 +1260,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // pages/_app.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function MyApp({ Component, pageProps }: any) {
   useAnalytics({
@@ -1293,7 +1293,7 @@ export const wrapRootElement = ({ element }) => {
 };
 
 // src/components/AnalyticsProvider.js
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 export function AnalyticsProvider({ children }) {
   useAnalytics({
@@ -1311,7 +1311,7 @@ export function AnalyticsProvider({ children }) {
 
 ```tsx
 // src/App.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   useAnalytics({
@@ -1338,7 +1338,7 @@ import {
   checkAndSetLocationConsent, 
   hasLocationConsent, 
   clearLocationConsent 
-} from '@atif910/analytics-tracker';
+} from 'user-analytics-tracker';
 
 function PhoneNumberForm() {
   const handleSubmit = async (phoneNumber: string) => {

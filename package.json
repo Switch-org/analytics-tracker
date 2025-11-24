@@ -1,5 +1,5 @@
 {
-  "name": "@atif910/analytics-tracker",
+  "name": "user-analytics-tracker",
   "version": "1.2.0",
   "description": "Comprehensive analytics tracking library with device detection, network analysis, location tracking, and IP geolocation",
   "keywords": [
@@ -107,8 +107,5 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

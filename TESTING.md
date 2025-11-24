@@ -56,7 +56,7 @@ This guide shows you how to test the new Firebase/GA-style event tracking functi
 
 1. **Install and configure:**
    ```tsx
-   import { useAnalytics, AnalyticsService } from '@atif910/analytics-tracker';
+   import { useAnalytics, AnalyticsService } from 'user-analytics-tracker';
 
    // Configure endpoint
    AnalyticsService.configure({
@@ -90,7 +90,7 @@ This guide shows you how to test the new Firebase/GA-style event tracking functi
 
 3. **Standalone usage (without React):**
    ```javascript
-   import { AnalyticsService } from '@atif910/analytics-tracker';
+   import { AnalyticsService } from 'user-analytics-tracker';
 
    AnalyticsService.configure({
      apiEndpoint: 'https://your-api.com/analytics'

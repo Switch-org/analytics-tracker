@@ -1,5 +1,5 @@
 /**
- * @atif910/analytics-tracker
+ * user-analytics-tracker
  * Comprehensive analytics tracking library with device detection,
  * network analysis, location tracking, and IP geolocation
  */

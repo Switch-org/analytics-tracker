@@ -1,6 +1,6 @@
-# @atif910/analytics-tracker
+# user-analytics-tracker
 
-[![npm version](https://badge.fury.io/js/%40atif910%2Fanalytics-tracker.svg)](https://www.npmjs.com/package/@atif910/analytics-tracker)
+[![npm version](https://badge.fury.io/js/user-analytics-tracker.svg)](https://www.npmjs.com/package/user-analytics-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml)
 
@@ -28,11 +28,11 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 ## 📦 Installation
 
 ```bash
-npm install @atif910/analytics-tracker react react-dom
+npm install user-analytics-tracker react react-dom
 # or
-yarn add @atif910/analytics-tracker react react-dom
+yarn add user-analytics-tracker react react-dom
 # or
-pnpm add @atif910/analytics-tracker react react-dom
+pnpm add user-analytics-tracker react react-dom
 ```
 
 **Note**: React and React-DOM are peer dependencies and must be installed separately.
@@ -46,7 +46,7 @@ pnpm add @atif910/analytics-tracker react react-dom
 Simply provide your backend URL in the `apiEndpoint` configuration:
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   const analytics = useAnalytics({
@@ -122,7 +122,7 @@ const analytics = useAnalytics({
 **React (Create React App)**
 ```tsx
 // src/App.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   const analytics = useAnalytics({
@@ -136,7 +136,7 @@ function App() {
 **Next.js**
 ```tsx
 // app/layout.tsx or pages/_app.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 export default function Layout() {
   useAnalytics({
@@ -150,7 +150,7 @@ export default function Layout() {
 **Vite + React**
 ```tsx
 // src/main.tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function App() {
   useAnalytics({
@@ -166,7 +166,7 @@ function App() {
 ### Basic Usage (React Hook)
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function MyApp() {
   const { sessionId, networkInfo, deviceInfo, location, logEvent } = useAnalytics({
@@ -199,7 +199,7 @@ import {
   DeviceDetector,
   AttributionDetector,
   LocationDetector,
-} from '@atif910/analytics-tracker';
+} from 'user-analytics-tracker';
 
 // Detect network type
 const network = NetworkDetector.detect();
@@ -363,7 +363,7 @@ const location = await LocationDetector.detectWithAutoConsent();
 Get just the public IP address (utility function).
 
 ```typescript
-import { getPublicIP } from '@atif910/analytics-tracker';
+import { getPublicIP } from 'user-analytics-tracker';
 
 const ip = await getPublicIP();
 console.log(ip); // "203.0.113.42"
@@ -397,7 +397,7 @@ const attribution = AttributionDetector.detect();
 Send analytics data to your backend.
 
 ```typescript
-import { AnalyticsService } from '@atif910/analytics-tracker';
+import { AnalyticsService } from 'user-analytics-tracker';
 
 // Configure endpoint - use your own server
 AnalyticsService.configure({ 
@@ -429,7 +429,7 @@ import {
   hasLocationConsent,
   checkAndSetLocationConsent,
   clearLocationConsent,
-} from '@atif910/analytics-tracker';
+} from 'user-analytics-tracker';
 
 // When user enters MSISDN, grant location consent
 checkAndSetLocationConsent(msisdn); // Returns true if consent granted
@@ -449,7 +449,7 @@ clearLocationConsent();
 **Client-Side: Get Public IP**
 
 ```typescript
-import { getPublicIP } from '@atif910/analytics-tracker';
+import { getPublicIP } from 'user-analytics-tracker';
 
 // Get just the public IP address (no location data)
 const ip = await getPublicIP();
@@ -459,7 +459,7 @@ console.log('Your IP:', ip); // "203.0.113.42"
 **Server-Side: IP Location from Request**
 
 ```typescript
-import { getIPLocation, getIPFromRequest } from '@atif910/analytics-tracker';
+import { getIPLocation, getIPFromRequest } from 'user-analytics-tracker';
 
 // In your API route (Next.js example)
 export async function POST(req: Request) {
@@ -479,7 +479,7 @@ export async function POST(req: Request) {
 When a user enters their phone number (MSISDN), it implies consent for location tracking. The library automatically grants location consent:
 
 ```typescript
-import { checkAndSetLocationConsent } from '@atif910/analytics-tracker';
+import { checkAndSetLocationConsent } from 'user-analytics-tracker';
 
 // When MSISDN is entered
 checkAndSetLocationConsent(phoneNumber);
@@ -491,7 +491,7 @@ checkAndSetLocationConsent(phoneNumber);
 Detect and restrict hotspot users:
 
 ```tsx
-import { useAnalytics } from '@atif910/analytics-tracker';
+import { useAnalytics } from 'user-analytics-tracker';
 
 function HotspotGate({ children }) {
   const { networkInfo } = useAnalytics({ autoSend: false });
@@ -514,7 +514,7 @@ function HotspotGate({ children }) {
 ### Custom Analytics Service
 
 ```typescript
-import { AnalyticsService } from '@atif910/analytics-tracker';
+import { AnalyticsService } from 'user-analytics-tracker';
 
 class MyAnalyticsService extends AnalyticsService {
   static async trackUserJourney(data: any) {
@@ -550,7 +550,7 @@ Example Next.js API route:
 ```typescript
 // app/api/analytics/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getIPFromRequest, getIPLocation } from '@atif910/analytics-tracker';
+import { getIPFromRequest, getIPLocation } from 'user-analytics-tracker';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -650,7 +650,7 @@ import type {
   AttributionInfo,
   IPLocation,
   UseAnalyticsReturn,
-} from '@atif910/analytics-tracker';
+} from 'user-analytics-tracker';
 ```
 
 ## 🤝 Contributing

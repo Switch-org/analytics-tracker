@@ -104,7 +104,7 @@ export class LocationDetector {
         const ipLocation = await this.getIPBasedLocation();
         this.lastLocationRef.current = ipLocation;
         return ipLocation;
-      } catch (ipError) {
+      } catch (_ipError) {
         const unsupportedResult: LocationInfo = {
           source: 'unknown',
           permission: 'unsupported',
@@ -127,7 +127,7 @@ export class LocationDetector {
             try {
               const ipLocation = await this.getIPBasedLocation();
               resolve(ipLocation as unknown as T);
-            } catch (ipError) {
+            } catch (_ipError) {
               resolve({ source: 'unknown', permission: userHasConsent ? 'granted' : 'prompt' } as unknown as T);
             }
           }
@@ -147,7 +147,7 @@ export class LocationDetector {
             try {
               const ipLocation = await this.getIPBasedLocation();
               resolve(ipLocation as unknown as T);
-            } catch (ipError) {
+            } catch (_ipError) {
               resolve({ source: 'unknown', permission: userHasConsent ? 'granted' : 'prompt' } as unknown as T);
             }
           }
@@ -206,7 +206,7 @@ export class LocationDetector {
                 this.lastLocationRef.current = ipLocation;
                 resolve(ipLocation);
               })
-              .catch((ipError) => {
+              .catch((_ipError) => {
                 // Even if IP location fails, we still have consent
                 const locationResult: LocationInfo = {
                   permission: 'granted',

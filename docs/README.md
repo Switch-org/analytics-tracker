@@ -1,6 +1,6 @@
 # Documentation
 
-Welcome to the `@atif910/analytics-tracker` documentation. This directory contains comprehensive guides and references for using, developing, and contributing to the package.
+Welcome to the `user-analytics-tracker` documentation. This directory contains comprehensive guides and references for using, developing, and contributing to the package.
 
 ## 📚 Documentation Index
 
