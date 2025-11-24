@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/switch-org/analytics-tracker/compare/v1.2.0...v1.3.0) (2025-11-24)
+
+
+### Features
+
+* location and network detector updated ([4dd4dde](https://github.com/switch-org/analytics-tracker/commit/4dd4ddedf6e285ba4fc2cd330b6e183a8218b4e2))
+
 # [1.2.0](https://github.com/switch-org/analytics-tracker/compare/v1.1.0...v1.2.0) (2025-11-21)
 
 
