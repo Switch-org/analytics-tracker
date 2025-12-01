@@ -22,6 +22,13 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 - 📊 **IP Geolocation**: Client-side and server-side IP-based location detection utilities
 - 🔒 **Privacy-First**: User consent required for location tracking (GPS & IP), consent management utilities
 - 🎯 **Custom Event Tracking**: Firebase/Google Analytics-style event tracking with automatic context collection
+- ⚡ **Event Batching & Queue System**: Automatic event batching reduces API calls by 50-90%. Events are queued and sent in configurable batches with offline persistence
+- 🔄 **Retry Logic**: Automatic retry with exponential backoff for failed requests. Configurable retry attempts and delays
+- 📝 **Enhanced Logging**: Configurable log levels (silent, error, warn, info, debug) with automatic dev/prod level selection
+- 🔌 **Plugin System**: Extensible plugin architecture for event transformation, filtering, and enrichment
+- 📈 **Session Management**: Enhanced session tracking with timeout detection and automatic renewal
+- 🐛 **Debug Tools**: Built-in debugging utilities for development (queue inspection, manual flush, stats)
+- 📊 **Performance Metrics**: Optional metrics collection for monitoring events, retries, and performance
 - ⚡ **Lightweight**: Zero runtime dependencies (except React)
 - 📦 **TypeScript**: Fully typed with comprehensive type definitions
 - 🎨 **Framework Agnostic Core**: Core detectors work without React
@@ -57,6 +64,36 @@ function App() {
     },
   });
 }
+```
+
+### Advanced Configuration Options
+
+The package now supports extensive configuration options for batching, retry logic, logging, and more:
+
+```tsx
+const analytics = useAnalytics({
+  config: {
+    apiEndpoint: 'https://api.yourcompany.com/analytics',
+    
+    // Event batching configuration
+    batchSize: 10,              // Events per batch (default: 10)
+    batchInterval: 5000,        // Flush interval in ms (default: 5000)
+    maxQueueSize: 100,          // Max queued events (default: 100)
+    
+    // Retry configuration
+    maxRetries: 3,              // Max retry attempts (default: 3)
+    retryDelay: 1000,           // Initial retry delay in ms (default: 1000)
+    
+    // Session configuration
+    sessionTimeout: 1800000,    // Session timeout in ms (default: 30 min)
+    
+    // Logging configuration
+    logLevel: 'warn',           // 'silent' | 'error' | 'warn' | 'info' | 'debug' (default: 'warn')
+    
+    // Metrics configuration
+    enableMetrics: false,       // Enable metrics collection (default: false)
+  },
+});
 ```
 
 ### Configuration Options
@@ -272,6 +309,32 @@ interface UseAnalyticsOptions {
     attribution: AttributionInfo;
   }) => void; // Callback when data is ready
 }
+
+interface AnalyticsConfig {
+  apiEndpoint: string;
+  // Batching options
+  batchSize?: number;        // Events per batch (default: 10)
+  batchInterval?: number;    // Flush interval in ms (default: 5000)
+  maxQueueSize?: number;     // Max queued events (default: 100)
+  // Retry options
+  maxRetries?: number;       // Max retry attempts (default: 3)
+  retryDelay?: number;       // Initial retry delay in ms (default: 1000)
+  // Session options
+  sessionTimeout?: number;   // Session timeout in ms (default: 1800000 = 30 min)
+  // Logging options
+  logLevel?: LogLevel;       // 'silent' | 'error' | 'warn' | 'info' | 'debug' (default: 'warn')
+  // Metrics options
+  enableMetrics?: boolean;   // Enable metrics collection (default: false)
+  // Existing options
+  autoSend?: boolean;
+  enableLocation?: boolean;
+  enableIPGeolocation?: boolean;
+  enableNetworkDetection?: boolean;
+  enableDeviceDetection?: boolean;
+  enableAttribution?: boolean;
+  sessionStoragePrefix?: string;
+  localStoragePrefix?: string;
+}
 ```
 
 #### Returns
@@ -416,6 +479,26 @@ const attribution = AttributionDetector.detect();
 
 ### Services
 
+#### `AnalyticsService.configure()`
+
+Configure the analytics service with advanced options.
+
+```typescript
+import { AnalyticsService } from 'user-analytics-tracker';
+
+AnalyticsService.configure({
+  apiEndpoint: 'https://api.yourcompany.com/analytics',
+  batchSize: 20,              // Events per batch (default: 10)
+  batchInterval: 10000,       // Flush interval in ms (default: 5000)
+  maxQueueSize: 100,          // Max queued events (default: 100)
+  maxRetries: 5,              // Max retry attempts (default: 3)
+  retryDelay: 2000,           // Initial retry delay in ms (default: 1000)
+  sessionTimeout: 1800000,    // Session timeout in ms (default: 30 min)
+  logLevel: 'info',           // Logging verbosity (default: 'warn')
+  enableMetrics: true,        // Enable metrics collection (default: false)
+});
+```
+
 #### `AnalyticsService.trackUserJourney()`
 
 Send analytics data to your backend.
@@ -443,7 +526,110 @@ await AnalyticsService.trackUserJourney({
 });
 ```
 
+#### `AnalyticsService.flushQueue()`
+
+Manually flush the event queue (useful before page unload).
+
+```typescript
+// Flush all queued events immediately
+await AnalyticsService.flushQueue();
+```
+
+#### `AnalyticsService.getQueueSize()`
+
+Get the current number of events in the queue.
+
+```typescript
+const size = AnalyticsService.getQueueSize();
+console.log(`Queue has ${size} events`);
+```
+
+#### `AnalyticsService.getMetrics()`
+
+Get performance metrics (if enabled).
+
+```typescript
+const metrics = AnalyticsService.getMetrics();
+if (metrics) {
+  console.log(`Sent: ${metrics.eventsSent}, Failed: ${metrics.eventsFailed}`);
+}
+```
+
 ### Utilities
+
+#### Logger
+
+Configure logging levels for better debugging and production use.
+
+```typescript
+import { logger } from 'user-analytics-tracker';
+
+// Set log level
+logger.setLevel('debug'); // 'silent' | 'error' | 'warn' | 'info' | 'debug'
+
+// Use logger
+logger.debug('Debug message');
+logger.info('Info message');
+logger.warn('Warning message');
+logger.error('Error message');
+```
+
+#### Plugin Manager
+
+Register and manage plugins for event transformation.
+
+```typescript
+import { pluginManager } from 'user-analytics-tracker';
+
+// Register a plugin
+pluginManager.register({
+  name: 'my-plugin',
+  beforeSend: (event) => {
+    // Transform event
+    return event;
+  },
+});
+
+// Unregister a plugin
+pluginManager.unregister('my-plugin');
+
+// Get all plugins
+const plugins = pluginManager.getPlugins();
+```
+
+#### Queue Manager
+
+Advanced queue management (for power users).
+
+```typescript
+import { QueueManager } from 'user-analytics-tracker';
+
+const queue = new QueueManager({
+  batchSize: 20,
+  batchInterval: 10000,
+  maxQueueSize: 200,
+  storageKey: 'my-queue',
+});
+
+queue.setFlushCallback(async (events) => {
+  // Custom flush logic
+});
+```
+
+#### Metrics Collector
+
+Collect and monitor analytics performance metrics.
+
+```typescript
+import { metricsCollector } from 'user-analytics-tracker';
+
+// Metrics are automatically collected when enableMetrics is true
+// Access metrics
+const metrics = metricsCollector.getMetrics();
+
+// Reset metrics
+metricsCollector.reset();
+```
 
 #### Location Consent Management
 
@@ -466,6 +652,45 @@ if (hasLocationConsent()) {
 // Manually grant/revoke consent
 setLocationConsentGranted();
 clearLocationConsent();
+```
+
+#### Session Management
+
+Enhanced session tracking utilities.
+
+```typescript
+import {
+  getOrCreateSession,
+  updateSessionActivity,
+  getSession,
+  clearSession,
+} from 'user-analytics-tracker';
+
+// Get or create session with custom timeout (30 minutes)
+const session = getOrCreateSession(30 * 60 * 1000);
+// Returns: { sessionId, startTime, lastActivity, pageViews }
+
+// Update session activity
+updateSessionActivity();
+
+// Get current session
+const currentSession = getSession();
+
+// Clear session
+clearSession();
+```
+
+#### Debug Utilities
+
+Development debugging tools.
+
+```typescript
+import { initDebug } from 'user-analytics-tracker';
+
+// Initialize debug tools (automatically called in development)
+initDebug();
+
+// Then access via window.__analyticsDebug in browser console
 ```
 
 #### IP Geolocation Utilities

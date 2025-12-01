@@ -16,8 +16,9 @@ import { DeviceDetector } from '../detectors/device-detector';
 import { LocationDetector } from '../detectors/location-detector';
 import { AttributionDetector } from '../detectors/attribution-detector';
 import { AnalyticsService } from '../services/analytics-service';
-import { getOrCreateUserId, trackPageVisit } from '../utils/storage';
+import { getOrCreateUserId, trackPageVisit, getOrCreateSession, updateSessionActivity } from '../utils/storage';
 import { hasLocationConsent } from '../utils/location-consent';
+import { initDebug } from '../utils/debug';
 
 export interface UseAnalyticsOptions {
   autoSend?: boolean;
@@ -48,9 +49,29 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
   // Configure analytics service if endpoint provided
   useEffect(() => {
     if (config?.apiEndpoint) {
-      AnalyticsService.configure({ apiEndpoint: config.apiEndpoint });
+      AnalyticsService.configure({
+        apiEndpoint: config.apiEndpoint,
+        batchSize: config.batchSize,
+        batchInterval: config.batchInterval,
+        maxQueueSize: config.maxQueueSize,
+        maxRetries: config.maxRetries,
+        retryDelay: config.retryDelay,
+        logLevel: config.logLevel,
+        enableMetrics: config.enableMetrics,
+        sessionTimeout: config.sessionTimeout,
+      });
     }
-  }, [config?.apiEndpoint]);
+  }, [
+    config?.apiEndpoint,
+    config?.batchSize,
+    config?.batchInterval,
+    config?.maxQueueSize,
+    config?.maxRetries,
+    config?.retryDelay,
+    config?.logLevel,
+    config?.enableMetrics,
+    config?.sessionTimeout,
+  ]);
 
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
@@ -77,6 +98,11 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
         locationConsentLoggedRef.current = false;
       };
     }
+  }, []);
+
+  // Initialize debug tools in development
+  useEffect(() => {
+    initDebug();
   }, []);
 
   const refresh = useCallback(async () => {
@@ -302,6 +328,19 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
   const incrementInteraction = useCallback(() => {
     setInteractions((n) => n + 1);
   }, []);
+
+  // Session management
+  useEffect(() => {
+    if (config?.sessionTimeout) {
+      const session = getOrCreateSession(config.sessionTimeout);
+      // Update session activity on user interactions
+      const activityInterval = setInterval(() => {
+        updateSessionActivity();
+      }, 60000); // Update every minute
+
+      return () => clearInterval(activityInterval);
+    }
+  }, [config?.sessionTimeout]);
 
   return useMemo(
     () => ({

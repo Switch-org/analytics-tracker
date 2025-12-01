@@ -90,6 +90,8 @@ export interface IPLocation {
   query?: string;
 }
 
+export type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'debug';
+
 export interface AnalyticsConfig {
   apiEndpoint: string;
   autoSend?: boolean;
@@ -100,6 +102,19 @@ export interface AnalyticsConfig {
   enableAttribution?: boolean;
   sessionStoragePrefix?: string;
   localStoragePrefix?: string;
+  // Queue and batching configuration
+  batchSize?: number; // Events per batch (default: 10)
+  batchInterval?: number; // Flush interval in ms (default: 5000)
+  maxQueueSize?: number; // Max queued events (default: 100)
+  // Retry configuration
+  maxRetries?: number; // Max retry attempts (default: 3)
+  retryDelay?: number; // Initial retry delay in ms (default: 1000)
+  // Session configuration
+  sessionTimeout?: number; // Session timeout in ms (default: 1800000 = 30 min)
+  // Logging configuration
+  logLevel?: LogLevel; // Logging verbosity (default: 'warn')
+  // Metrics configuration
+  enableMetrics?: boolean; // Enable metrics collection (default: false)
 }
 
 export interface AnalyticsEvent {

@@ -46,6 +46,32 @@ Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
 });
 
+// Ensure window event listeners exist (for QueueManager)
+if (typeof window.addEventListener !== 'function') {
+  (window as any).addEventListener = vi.fn();
+}
+if (typeof window.removeEventListener !== 'function') {
+  (window as any).removeEventListener = vi.fn();
+}
+
+// Ensure sendBeacon exists (used in QueueManager)
+if (typeof (window.navigator as any).sendBeacon !== 'function') {
+  (window.navigator as any).sendBeacon = vi.fn(() => true);
+}
+
+// Ensure window event listeners exist (for QueueManager)
+if (typeof window.addEventListener !== 'function') {
+  (window as any).addEventListener = vi.fn();
+}
+if (typeof window.removeEventListener !== 'function') {
+  (window as any).removeEventListener = vi.fn();
+}
+
+// Ensure sendBeacon exists (used in QueueManager)
+if (typeof (window.navigator as any).sendBeacon !== 'function') {
+  (window.navigator as any).sendBeacon = vi.fn(() => true);
+}
+
 // Mock navigator
 Object.defineProperty(window, 'navigator', {
   value: {

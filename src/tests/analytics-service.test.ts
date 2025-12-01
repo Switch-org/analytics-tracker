@@ -5,9 +5,13 @@ import { AnalyticsService } from '../services/analytics-service';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock dynamic imports to avoid actual network calls
+// Mock storage utilities to avoid touching real storage
 vi.mock('../utils/storage', () => ({
   getOrCreateUserId: vi.fn(() => 'test-session-id'),
+  loadJSON: vi.fn(() => null),
+  saveJSON: vi.fn(),
+  loadSessionJSON: vi.fn(() => null),
+  saveSessionJSON: vi.fn(),
 }));
 
 vi.mock('../detectors/network-detector', () => ({
@@ -52,14 +56,10 @@ describe('AnalyticsService', () => {
 
   describe('logEvent', () => {
     it('should send event with eventName and parameters', async () => {
-      // Mock window to avoid auto-collection issues
-      Object.defineProperty(global, 'window', {
-        value: {
-          location: { href: 'https://example.com' },
-        },
-        writable: true,
-        configurable: true,
-      });
+      // Mock window.location to avoid auto-collection issues without replacing window object
+      const g = global as any;
+      delete g.window.location;
+      g.window.location = { href: 'https://example.com' } as any;
 
       await AnalyticsService.logEvent('button_click', {
         button_name: 'signup',
@@ -69,13 +69,17 @@ describe('AnalyticsService', () => {
         pageUrl: 'https://example.com',
       });
 
+      // Flush queue so batched events are sent
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
       expect(call[0]).toBe('/api/analytics');
       expect(call[1].method).toBe('POST');
       expect(call[1].headers['Content-Type']).toBe('application/json');
 
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.eventName).toBe('button_click');
       expect(body.eventParameters).toEqual({
         button_name: 'signup',
@@ -95,24 +99,25 @@ describe('AnalyticsService', () => {
         pageUrl: 'https://example.com',
       });
 
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.eventName).toBe('page_view');
       expect(body.eventParameters).toEqual({});
     }, 10000);
 
     it('should auto-collect context when not provided', async () => {
       // Mock window and navigator for context collection
-      Object.defineProperty(global, 'window', {
-        value: {
-          location: { href: 'https://example.com/test' },
-        },
-        writable: true,
-      });
+      const g = global as any;
+      delete g.window.location;
+      g.window.location = { href: 'https://example.com/test' } as any;
 
       Object.defineProperty(global, 'navigator', {
         value: {
+          ...(g.navigator || {}),
           userAgent: 'test-agent',
           hardwareConcurrency: 4,
         },
@@ -121,9 +126,12 @@ describe('AnalyticsService', () => {
 
       await AnalyticsService.logEvent('test_event', { param: 'value' });
 
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.pageUrl).toBe('https://example.com/test');
       expect(body.sessionId).toBeDefined();
     });
@@ -137,9 +145,12 @@ describe('AnalyticsService', () => {
 
       await AnalyticsService.logEvent('test_event', { param: 'value' }, customContext);
 
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.sessionId).toBe('custom-session-123');
       expect(body.pageUrl).toBe('https://custom.com/page');
       expect(body.userId).toBe('user-123');
@@ -149,6 +160,8 @@ describe('AnalyticsService', () => {
       AnalyticsService.configure({ apiEndpoint: 'https://custom-api.com/events' });
 
       await AnalyticsService.logEvent('test_event');
+
+      await AnalyticsService.flushQueue();
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
@@ -184,27 +197,33 @@ describe('AnalyticsService', () => {
         page_title: 'Dashboard',
       });
 
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.eventName).toBe('page_view');
       expect(body.eventParameters.page_name).toBe('/dashboard');
       expect(body.eventParameters.page_title).toBe('Dashboard');
     });
 
     it('should use current pathname when page name not provided', async () => {
-      Object.defineProperty(global, 'window', {
-        value: {
-          location: { pathname: '/home', href: 'https://example.com/home' },
-        },
-        writable: true,
-      });
+      const g = global as any;
+      delete g.window.location;
+      g.window.location = {
+        pathname: '/home',
+        href: 'https://example.com/home',
+      } as any;
 
       await AnalyticsService.trackPageView();
 
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.eventName).toBe('page_view');
       expect(body.eventParameters.page_name).toBe('/home');
     });
@@ -218,9 +237,12 @@ describe('AnalyticsService', () => {
         userId: 'user-123',
       });
 
+      await AnalyticsService.flushQueue();
+
       expect(mockFetch).toHaveBeenCalledTimes(1);
       const call = mockFetch.mock.calls[0];
-      const body = JSON.parse(call[1].body);
+      const events = JSON.parse(call[1].body);
+      const body = Array.isArray(events) ? events[0] : events;
       expect(body.eventName).toBe('page_view');
       expect(body.sessionId).toBe('session-123');
       expect(body.pageUrl).toBe('https://example.com/page');

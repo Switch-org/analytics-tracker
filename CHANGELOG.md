@@ -1,3 +1,23 @@
+# [1.8.0](https://github.com/switch-org/analytics-tracker/compare/v1.7.0...v1.8.0) (2025-01-XX)
+
+### Features
+
+* **Event Batching & Queue System**: Automatic event batching reduces API calls by 50-90%. Events are queued and sent in configurable batches (default: 10 events per batch, 5 second intervals)
+* **Offline Support**: Events are persisted to localStorage and automatically sent when connection is restored
+* **Retry Logic with Exponential Backoff**: Automatic retry mechanism for failed requests with exponential backoff (1s, 2s, 4s, 8s). Configurable max retries (default: 3)
+* **Enhanced Logging System**: Configurable log levels (`silent`, `error`, `warn`, `info`, `debug`) with automatic dev/prod level selection
+* **Plugin/Middleware System**: Extensible plugin architecture for event transformation, filtering, and enrichment. Supports `beforeSend`, `afterSend`, and `onError` hooks
+* **Session Management Improvements**: Enhanced session tracking with timeout detection (default: 30 min), automatic session renewal, and session utilities
+* **Developer Debugging Tools**: Built-in debug utilities accessible via `window.__analyticsDebug` in development mode. Includes queue inspection, manual flush, and stats
+* **Performance Monitoring & Metrics**: Optional metrics collection tracking events sent/queued/failed, average send time, retry counts, and error history
+* **Enhanced Configuration Options**: New config options for batching (`batchSize`, `batchInterval`, `maxQueueSize`), retry (`maxRetries`, `retryDelay`), session (`sessionTimeout`), logging (`logLevel`), and metrics (`enableMetrics`)
+
+### Improvements
+
+* Better error handling with graceful degradation
+* Improved test coverage for new features
+* Enhanced TypeScript types for all new features
+
 # [1.7.0](https://github.com/switch-org/analytics-tracker/compare/v1.6.0...v1.7.0) (2025-11-24)
 
 

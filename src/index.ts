@@ -39,7 +39,15 @@ export {
   saveJSON,
   loadSessionJSON,
   saveSessionJSON,
+  getOrCreateSession,
+  updateSessionActivity,
+  getSession,
+  clearSession,
 } from './utils/storage';
+export type { SessionInfo } from './utils/storage';
+
+// Debug utilities
+export { initDebug } from './utils/debug';
 
 export {
   setLocationConsentGranted,
@@ -50,6 +58,14 @@ export {
 } from './utils/location-consent';
 
 export { getIPLocation, getIPFromRequest, getPublicIP } from './utils/ip-geolocation';
+
+// Logger utility
+export { logger } from './utils/logger';
+export type { LogLevel } from './types';
+
+// Queue manager (for advanced usage)
+export { QueueManager } from './utils/queue-manager';
+export type { QueuedEvent, QueueConfig } from './utils/queue-manager';
 
 // Default export for convenience
 export { useAnalytics as default } from './hooks/useAnalytics';

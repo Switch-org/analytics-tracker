@@ -76,3 +76,91 @@ export function trackPageVisit(): number {
   return newCount;
 }
 
+/**
+ * Session management utilities
+ */
+export interface SessionInfo {
+  sessionId: string;
+  startTime: number;
+  lastActivity: number;
+  pageViews: number;
+}
+
+const SESSION_STORAGE_KEY = 'analytics:session';
+const DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+/**
+ * Get or create a session
+ */
+export function getOrCreateSession(timeout: number = DEFAULT_SESSION_TIMEOUT): SessionInfo {
+  if (typeof window === 'undefined') {
+    return {
+      sessionId: `server-${Date.now()}`,
+      startTime: Date.now(),
+      lastActivity: Date.now(),
+      pageViews: 1,
+    };
+  }
+
+  const stored = loadJSON<SessionInfo>(SESSION_STORAGE_KEY);
+  const now = Date.now();
+
+  // Check if session expired
+  if (stored && now - stored.lastActivity < timeout) {
+    // Update last activity
+    const updated: SessionInfo = {
+      ...stored,
+      lastActivity: now,
+      pageViews: stored.pageViews + 1,
+    };
+    saveJSON(SESSION_STORAGE_KEY, updated);
+    return updated;
+  }
+
+  // Create new session
+  const sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  const newSession: SessionInfo = {
+    sessionId,
+    startTime: now,
+    lastActivity: now,
+    pageViews: 1,
+  };
+  saveJSON(SESSION_STORAGE_KEY, newSession);
+  return newSession;
+}
+
+/**
+ * Update session activity
+ */
+export function updateSessionActivity(): void {
+  if (typeof window === 'undefined') return;
+
+  const stored = loadJSON<SessionInfo>(SESSION_STORAGE_KEY);
+  if (stored) {
+    const updated: SessionInfo = {
+      ...stored,
+      lastActivity: Date.now(),
+    };
+    saveJSON(SESSION_STORAGE_KEY, updated);
+  }
+}
+
+/**
+ * Get current session info
+ */
+export function getSession(): SessionInfo | null {
+  return loadJSON<SessionInfo>(SESSION_STORAGE_KEY);
+}
+
+/**
+ * Clear session
+ */
+export function clearSession(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch {
+    // Silently fail
+  }
+}
+
