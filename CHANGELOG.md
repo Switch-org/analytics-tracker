@@ -1,3 +1,17 @@
+# [2.0.0](https://github.com/switch-org/analytics-tracker/compare/v1.7.0...v2.0.0) (2025-12-01)
+
+
+### Features
+
+* major improvements - event batching, retry logic, plugins, and more ([f47b0ea](https://github.com/switch-org/analytics-tracker/commit/f47b0ea0f7bde575d4d91a2ae807fb074065c55c))
+* major improvements - event batching, retry logic, plugins, and more ([46d0c1c](https://github.com/switch-org/analytics-tracker/commit/46d0c1c3e8435dec70fb04e99ad0902198c1486c))
+
+
+### BREAKING CHANGES
+
+* None - all changes are backward compatible
+* None - all changes are backward compatible
+
 # [1.8.0](https://github.com/switch-org/analytics-tracker/compare/v1.7.0...v1.8.0) (2025-01-XX)
 
 ### Features
