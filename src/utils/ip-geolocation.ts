@@ -3,12 +3,15 @@ import type { IPLocation } from '../types';
 /**
  * IP Geolocation Service
  * Fetches location data (country, region, city) from user's IP address
- * Uses free tier of ip-api.com (no API key required, 45 requests/minute)
+ * Uses ipwho.is API (no API key required)
+ * 
+ * Stores all keys dynamically from the API response, including nested objects
+ * This ensures we capture all available data and any new fields added by the API
  */
 
 /**
- * Get public IP address using ip-api.com
- * Free tier: 45 requests/minute, no API key required
+ * Get public IP address using ipwho.is API
+ * No API key required
  * 
  * @returns Promise<string | null> - The public IP address, or null if unavailable
  * 
@@ -25,9 +28,9 @@ export async function getPublicIP(): Promise<string | null> {
   }
 
   try {
-    // Call ip-api.com without IP parameter - it auto-detects user's IP
+    // Call ipwho.is without IP parameter - it auto-detects user's IP
     // Using HTTPS endpoint for better security
-    const response = await fetch('https://ip-api.com/json/?fields=status,message,query', {
+    const response = await fetch('https://ipwho.is/', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -42,12 +45,12 @@ export async function getPublicIP(): Promise<string | null> {
 
     const data = await response.json();
 
-    // ip-api.com returns status field
-    if (data.status === 'fail') {
+    // ipwho.is returns success field
+    if (data.success === false) {
       return null;
     }
 
-    return data.query || null;
+    return data.ip || null;
   } catch (error: any) {
     // Silently fail - don't break user experience
     if (error.name !== 'AbortError') {
@@ -58,13 +61,11 @@ export async function getPublicIP(): Promise<string | null> {
 }
 
 /**
- * Get location from IP address using ip-api.com
- * Free tier: 45 requests/minute, no API key required
- *
- * Alternative services:
- * - ipapi.co (requires API key for production)
- * - ipgeolocation.io (requires API key)
- * - ip-api.com (free tier available)
+ * Get location from IP address using ipwho.is API
+ * Free tier: No API key required
+ * 
+ * Stores all keys dynamically from the API response, including nested objects
+ * This ensures we capture all available data and any new fields added by the API
  */
 export async function getIPLocation(ip: string): Promise<IPLocation | null> {
   // Skip localhost/private IPs (these can't be geolocated)
@@ -85,16 +86,16 @@ export async function getIPLocation(ip: string): Promise<IPLocation | null> {
   }
 
   try {
-    // Using ip-api.com free tier (JSON format)
+    // Using ipwho.is API (no API key required)
     const response = await fetch(
-      `http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,org,as,query`,
+      `https://ipwho.is/${ip}`,
       {
         method: 'GET',
         headers: {
           Accept: 'application/json',
         },
         // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(5000),
       }
     );
 
@@ -105,27 +106,52 @@ export async function getIPLocation(ip: string): Promise<IPLocation | null> {
 
     const data = await response.json();
 
-    // ip-api.com returns status field
-    if (data.status === 'fail') {
-      console.warn(`[IP Geolocation] API error for IP ${ip}: ${data.message}`);
+    // ipwho.is returns success field
+    if (data.success === false) {
+      console.warn(`[IP Geolocation] API error for IP ${ip}: ${data.message || 'Unknown error'}`);
       return null;
     }
 
-    return {
-      ip: data.query || ip,
-      country: data.country || undefined,
-      countryCode: data.countryCode || undefined,
-      region: data.region || undefined,
-      regionName: data.regionName || undefined,
-      city: data.city || undefined,
-      lat: data.lat || undefined,
-      lon: data.lon || undefined,
-      timezone: data.timezone || undefined,
-      isp: data.isp || undefined,
-      org: data.org || undefined,
-      as: data.as || undefined,
-      query: data.query || ip,
+    // Store all keys dynamically from the response
+    // This ensures we capture all fields, including nested objects and any new fields
+    const locationData: IPLocation = {
+      ip: data.ip || ip,
+      // Map all fields from the API response dynamically
+      ...Object.keys(data).reduce((acc, key) => {
+        // Store all keys and their values, preserving nested objects
+        acc[key] = data[key];
+        return acc;
+      }, {} as Record<string, any>),
     };
+
+    // Add backward compatibility mappings for existing code
+    if (data.latitude !== undefined) {
+      locationData.lat = data.latitude;
+    }
+    if (data.longitude !== undefined) {
+      locationData.lon = data.longitude;
+    }
+    if (data.country_code !== undefined) {
+      locationData.countryCode = data.country_code;
+    }
+    if (data.region !== undefined) {
+      locationData.regionName = data.region;
+    }
+    if (data.connection?.isp !== undefined) {
+      locationData.isp = data.connection.isp;
+    }
+    if (data.connection?.org !== undefined) {
+      locationData.org = data.connection.org;
+    }
+    if (data.connection?.asn !== undefined) {
+      locationData.as = `AS${data.connection.asn}`;
+    }
+    if (data.timezone?.id !== undefined) {
+      locationData.timezone = data.timezone.id;
+    }
+    locationData.query = data.ip || ip;
+
+    return locationData;
   } catch (error: any) {
     // Silently fail - don't break user experience
     if (error.name !== 'AbortError') {

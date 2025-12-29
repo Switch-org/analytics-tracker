@@ -185,6 +185,9 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
       if (autoSend) {
         // Send after idle to not block paint
         const send = async () => {
+          // Extract IP location data if available (stored in ipLocationData field)
+          const ipLocationData = (loc as any)?.ipLocationData;
+          
           await AnalyticsService.trackUserJourney({
             sessionId: getOrCreateUserId(),
             pageUrl: typeof window !== 'undefined' ? window.location.href : '',
@@ -192,6 +195,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
             deviceInfo: dev,
             location: loc,
             attribution: attr,
+            ipLocation: ipLocationData,
             customData: config?.enableLocation ? { locationEnabled: true } : undefined,
           });
         };
@@ -208,6 +212,9 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
     async (customData?: Record<string, any>) => {
       if (!sessionId || !networkInfo || !deviceInfo) return;
 
+      // Extract IP location data if available (stored in ipLocationData field)
+      const ipLocationData = location ? (location as any)?.ipLocationData : undefined;
+
       await AnalyticsService.trackUserJourney({
         sessionId,
         pageUrl: typeof window !== 'undefined' ? window.location.href : '',
@@ -215,6 +222,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
         deviceInfo,
         location: location ?? undefined,
         attribution: attribution ?? undefined,
+        ipLocation: ipLocationData,
         userId: sessionId,
         customData,
       });

@@ -15,7 +15,8 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 - 📍 **Location Tracking**: 
   - **IP-based location** - Requires user consent (privacy-compliant)
   - **GPS location** - Requires explicit user consent and browser permission
-  - Includes public IP address, country, city, region, timezone
+  - Includes public IP address, country, city, region, timezone, continent, flag, connection details
+  - Dynamic key storage: All IP location API fields are automatically captured
   - Automatic fallback from GPS to IP when GPS unavailable
   - Consent management utilities included
 - 🎯 **Attribution Tracking**: UTM parameters, referrer tracking, first/last touch attribution
@@ -855,6 +856,14 @@ export async function POST(req: NextRequest) {
 
 Comprehensive documentation is available in the [`docs/`](./docs) directory:
 
+- **[Upgrade Guide](./docs/upgrade-guide.md)** - Step-by-step migration instructions for upgrading between versions
+
+- **[Upgrade Guide](./docs/upgrade-guide.md)** - Step-by-step migration instructions for upgrading between versions
+  - Breaking changes and compatibility notes
+  - New features and improvements
+  - Migration examples
+  - Troubleshooting upgrade issues
+
 - **[Usage Guide](./docs/usage-guide.md)** - Complete guide on how to use the package in your applications
   - Installation instructions
   - Basic and advanced usage examples
@@ -964,7 +973,7 @@ MIT © [Switch Org](https://github.com/switch-org)
 
 ## 🙏 Acknowledgments
 
-- Uses [ip-api.com](http://ip-api.com) for free IP geolocation
+- Uses [ipwho.is](https://ipwho.is/) for free IP geolocation
 - Built with modern web APIs (User-Agent Client Hints, Network Information API, Geolocation API)
 
 <!-- ## 📞 Support

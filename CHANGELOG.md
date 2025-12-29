@@ -1,3 +1,27 @@
+# [2.1.0](https://github.com/switch-org/analytics-tracker/compare/v2.0.0...v2.1.0) (TBD)
+
+### Features
+
+* **IP Geolocation API Migration**: Migrated from ip-api.com to ipwho.is API for IP-based location tracking
+  - More comprehensive location data including continent, flag, connection details, and timezone information
+  - Dynamic key storage: All API response keys are automatically stored, including nested objects
+  - Future-proof: New fields added by the API are automatically captured without code changes
+  - No API key required: Free tier with no authentication needed
+* **Enhanced IP Location Data**: The `IPLocation` interface now includes all fields from the ipwho.is API response
+  - New fields: `continent`, `continent_code`, `flag`, `connection`, `timezone` (with full details), `is_eu`, `postal`, `calling_code`, `capital`, `borders`
+  - Full backward compatibility: All existing fields (`lat`, `lon`, `countryCode`, etc.) remain available
+  - Access to full IP location data in analytics events via `ipLocationData` field
+
+### Improvements
+
+* Better IP location data coverage with additional metadata
+* Automatic storage of all API response keys, including future additions
+* Improved type definitions for IP location data
+
+### Migration Notes
+
+This upgrade is **fully backward compatible**. No code changes are required. See the [Upgrade Guide](./docs/upgrade-guide.md) for details on accessing new fields.
+
 # [2.0.0](https://github.com/switch-org/analytics-tracker/compare/v1.7.0...v2.0.0) (2025-12-01)
 
 

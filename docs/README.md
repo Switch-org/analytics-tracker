@@ -21,6 +21,12 @@ Welcome to the `user-analytics-tracker` documentation. This directory contains c
    - First steps
    - Common commands
 
+3. **[Upgrade Guide](./upgrade-guide.md)** - How to upgrade between versions
+   - Step-by-step migration instructions
+   - Breaking changes and compatibility notes
+   - New features and improvements
+   - Troubleshooting upgrade issues
+
 ### For Developers
 
 3. **[Package Structure](./package-structure.md)** - Understanding the codebase

@@ -1,5 +1,6 @@
 import type { LocationInfo } from '../types';
 import { hasLocationConsent, setLocationConsentGranted } from '../utils/location-consent';
+import { getPublicIP, getIPLocation } from '../utils/ip-geolocation';
 
 /**
  * Location Detector
@@ -299,7 +300,8 @@ export class LocationDetector {
   /**
    * Get location from IP-based public API (client-side)
    * Works without user permission, good fallback when GPS is unavailable
-   * Uses ip-api.com free tier (no API key required, 45 requests/minute)
+   * Uses ipwho.is API (no API key required)
+   * Stores all keys dynamically from the API response
    */
   private static async getIPBasedLocation(): Promise<LocationInfo> {
     // Return cached IP location if available
@@ -338,52 +340,40 @@ export class LocationDetector {
     this.ipLocationFetchingRef.current = true;
 
     try {
-      // Call ip-api.com without IP parameter - it auto-detects user's IP
-      // Using HTTPS endpoint for better security
-      const response = await fetch(
-        'https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,query',
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-          },
-          // Add timeout to prevent hanging
-          signal: AbortSignal.timeout(5000),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      // Get public IP first, then get location
+      const publicIP = await getPublicIP();
+      
+      if (!publicIP) {
+        throw new Error('Could not determine public IP address');
       }
 
-      const data = await response.json();
+      // Get location from IP using ipwho.is API
+      const ipLocation = await getIPLocation(publicIP);
 
-      // ip-api.com returns status field
-      if (data.status === 'fail') {
-        console.warn(`[Location] IP API error: ${data.message}`);
-        const fallback: LocationInfo = {
-          source: 'unknown',
-          permission: 'granted',
-        };
-        this.lastIPLocationRef.current = fallback;
-        return fallback;
+      if (!ipLocation) {
+        throw new Error('Could not fetch location data');
       }
 
       // Convert IP location to LocationInfo format
+      // Map all available fields from the IP location response
       const locationResult: LocationInfo = {
-        lat: data.lat || null,
-        lon: data.lon || null,
+        lat: ipLocation.latitude ?? ipLocation.lat ?? null,
+        lon: ipLocation.longitude ?? ipLocation.lon ?? null,
         accuracy: null, // IP-based location has no accuracy metric
         permission: 'granted', // IP location doesn't require permission
         source: 'ip',
         ts: new Date().toISOString(),
-        ip: data.query || null, // Public IP address
-        country: data.country || undefined,
-        countryCode: data.countryCode || undefined,
-        city: data.city || undefined,
-        region: data.regionName || data.region || undefined,
-        timezone: data.timezone || undefined,
+        ip: ipLocation.ip || publicIP,
+        country: ipLocation.country || undefined,
+        countryCode: ipLocation.country_code || ipLocation.countryCode || undefined,
+        city: ipLocation.city || undefined,
+        region: ipLocation.region || ipLocation.regionName || undefined,
+        timezone: ipLocation.timezone?.id || ipLocation.timezone || undefined,
       };
+
+      // Store the full IP location data in a custom field for access to all keys
+      // This preserves all dynamic keys from the API response
+      (locationResult as any).ipLocationData = ipLocation;
 
       console.log('[Location] IP-based location obtained:', {
         ip: locationResult.ip,
@@ -391,6 +381,8 @@ export class LocationDetector {
         lon: locationResult.lon,
         city: locationResult.city,
         country: locationResult.country,
+        continent: ipLocation.continent,
+        timezone: locationResult.timezone,
       });
 
       this.lastIPLocationRef.current = locationResult;

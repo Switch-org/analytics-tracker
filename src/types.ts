@@ -74,16 +74,48 @@ export interface AttributionInfo {
   lastTouch?: Record<string, string | null> | null;
 }
 
-export interface IPLocation {
+export interface IPLocation extends Record<string, any> {
   ip: string;
+  success?: boolean;
+  type?: string;
+  continent?: string;
+  continent_code?: string;
   country?: string;
-  countryCode?: string;
+  country_code?: string;
   region?: string;
-  regionName?: string;
+  region_code?: string;
   city?: string;
+  latitude?: number;
+  longitude?: number;
+  is_eu?: boolean;
+  postal?: string;
+  calling_code?: string;
+  capital?: string;
+  borders?: string;
+  flag?: {
+    img?: string;
+    emoji?: string;
+    emoji_unicode?: string;
+  };
+  connection?: {
+    asn?: number;
+    org?: string;
+    isp?: string;
+    domain?: string;
+  };
+  timezone?: {
+    id?: string;
+    abbr?: string;
+    is_dst?: boolean;
+    offset?: number;
+    utc?: string;
+    current_time?: string;
+  };
+  // Legacy fields for backward compatibility
+  countryCode?: string;
+  regionName?: string;
   lat?: number;
   lon?: number;
-  timezone?: string;
   isp?: string;
   org?: string;
   as?: string;
