@@ -356,6 +356,11 @@ export class LocationDetector {
 
       // Convert IP location to LocationInfo format
       // Map all available fields from the IP location response
+      // Handle timezone which can be either a string or an object
+      const timezoneValue = typeof ipLocation.timezone === 'string' 
+        ? ipLocation.timezone 
+        : ipLocation.timezone?.id || undefined;
+
       const locationResult: LocationInfo = {
         lat: ipLocation.latitude ?? ipLocation.lat ?? null,
         lon: ipLocation.longitude ?? ipLocation.lon ?? null,
@@ -368,7 +373,7 @@ export class LocationDetector {
         countryCode: ipLocation.country_code || ipLocation.countryCode || undefined,
         city: ipLocation.city || undefined,
         region: ipLocation.region || ipLocation.regionName || undefined,
-        timezone: ipLocation.timezone?.id || ipLocation.timezone || undefined,
+        timezone: timezoneValue,
       };
 
       // Store the full IP location data in a custom field for access to all keys
