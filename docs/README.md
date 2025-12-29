@@ -35,12 +35,12 @@ Welcome to the `user-analytics-tracker` documentation. This directory contains c
    - Code organization
    - Development guidelines
 
-4. **[Publishing Guide](./publishing.md)** - How to publish the package
-   - Prerequisites
-   - Publishing methods (automatic & manual)
-   - Version management
-   - Best practices
-   - Troubleshooting
+4. **[Publishing Guide](./publishing-guide.md)** - How to publish the package to npm
+   - Step-by-step deployment instructions
+   - Automatic publishing via GitHub Actions
+   - Commit message format for version bumps
+   - NPM_TOKEN setup
+   - Troubleshooting deployment issues
 
 ## 🚀 Getting Started
 
