@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/switch-org/analytics-tracker/compare/v2.0.0...v2.1.0) (2025-12-29)
+
+
+### Features
+
+* migrate IP geolocation to ipwho.is API with dynamic key storage ([0605f72](https://github.com/switch-org/analytics-tracker/commit/0605f7207baa590b776a3b52cbc055e98a8a22e4))
+
 # [2.1.0](https://github.com/switch-org/analytics-tracker/compare/v2.0.0...v2.1.0) (TBD)
 
 ### Features
