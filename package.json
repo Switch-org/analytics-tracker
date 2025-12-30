@@ -1,6 +1,6 @@
 {
   "name": "user-analytics-tracker",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Comprehensive analytics tracking library with device detection, network analysis, location tracking, and IP geolocation",
   "keywords": [
     "analytics",
