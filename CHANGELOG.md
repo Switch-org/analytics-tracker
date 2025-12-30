@@ -1,3 +1,41 @@
+# [3.0.0](https://github.com/switch-org/analytics-tracker/compare/v2.2.0...v3.0.0) (2025-12-30)
+
+
+### Features
+
+* optimize essential mode with deduplication and reduced deviceInfo fields ([b64eefa](https://github.com/switch-org/analytics-tracker/commit/b64eefa4992e0570b1011fa029d0db8de89c321b))
+
+
+### BREAKING CHANGES
+
+* Essential mode deviceInfo now stores only 8 fields instead of 15
+
+## Changes
+
+### Core Optimizations
+- Reduce deviceInfo essential fields from 15 to 8
+- Implement automatic deduplication between location and customData.ipLocation
+- Remove duplicate fields from location object
+- Add null/undefined value removal from filtered objects
+- Improve nested object handling
+
+### Field Storage Improvements
+- Add generic field storage transformer for all data types
+- Support essential/all/custom modes for all data types
+- Implement recursive null value cleaning
+- Add mode-aware deduplication logic
+
+### Documentation
+- Merge and consolidate essential mode documentation
+- Add comprehensive essential-mode-guide.md
+- Update documentation index
+- Add example payload JSON
+
+## Impact
+- Significantly smaller payloads (~30-40% reduction)
+- No duplicate data storage
+- All crucial information preserved
+
 # [2.2.0](https://github.com/switch-org/analytics-tracker/compare/v2.1.0...v2.2.0) (2025-12-30)
 
 
