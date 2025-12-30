@@ -3,6 +3,7 @@ import { QueueManager } from '../utils/queue-manager';
 import { logger } from '../utils/logger';
 import { pluginManager } from '../plugins/plugin-manager';
 import { metricsCollector } from '../utils/metrics';
+import { transformIPLocationForBackend } from '../utils/ip-location-transformer';
 
 /**
  * Analytics Service
@@ -330,6 +331,9 @@ export class AnalyticsService {
     pageVisits?: number;
     interactions?: number;
   }): Promise<void> {
+    // Transform IP location data to match backend expected format (camelCase)
+    const transformedIPLocation = transformIPLocationForBackend(ipLocation);
+
     await this.trackEvent({
       sessionId,
       pageUrl,
@@ -341,7 +345,8 @@ export class AnalyticsService {
       userId: userId ?? sessionId,
       customData: {
         ...customData,
-        ...(ipLocation && { ipLocation }),
+        // Store transformed IP location in customData for backend integration
+        ...(transformedIPLocation && { ipLocation: transformedIPLocation }),
       },
       eventName: 'page_view', // Auto-tracked as page view
     });
@@ -433,6 +438,15 @@ export class AnalyticsService {
 
     const finalSessionId = context?.sessionId || autoContext?.sessionId || 'unknown';
     const finalPageUrl = context?.pageUrl || autoContext?.pageUrl || '';
+    
+    // Extract IP location from location object if available
+    const locationData = context?.location || autoContext?.location;
+    const ipLocationData = locationData && typeof locationData === 'object' 
+      ? (locationData as any)?.ipLocationData 
+      : undefined;
+    
+    // Transform IP location data to match backend expected format
+    const transformedIPLocation = transformIPLocationForBackend(ipLocationData);
 
     await this.trackEvent({
       sessionId: finalSessionId,
@@ -444,7 +458,11 @@ export class AnalyticsService {
       userId: context?.userId || finalSessionId,
       eventName,
       eventParameters: parameters || {},
-      customData: parameters || {},
+      customData: {
+        ...(parameters || {}),
+        // Store transformed IP location in customData for backend integration
+        ...(transformedIPLocation && { ipLocation: transformedIPLocation }),
+      },
     });
   }
 

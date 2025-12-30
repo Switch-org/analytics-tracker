@@ -1,6 +1,6 @@
 import type { LocationInfo } from '../types';
 import { hasLocationConsent, setLocationConsentGranted } from '../utils/location-consent';
-import { getPublicIP, getIPLocation } from '../utils/ip-geolocation';
+import { getCompleteIPLocation, getIPLocation, getPublicIP } from '../utils/ip-geolocation';
 
 /**
  * Location Detector
@@ -340,18 +340,24 @@ export class LocationDetector {
     this.ipLocationFetchingRef.current = true;
 
     try {
-      // Get public IP first, then get location
-      const publicIP = await getPublicIP();
+      // HIGH PRIORITY: Get complete IP location data from ipwho.is in one call
+      // This gets IP, location, connection, timezone, flag, and all other data at once
+      // More efficient than making separate calls
+      let ipLocation = await getCompleteIPLocation();
       
-      if (!publicIP) {
-        throw new Error('Could not determine public IP address');
+      // If complete location fetch failed, try fallback: get IP first, then location
+      if (!ipLocation) {
+        console.log('[Location] Primary ipwho.is call failed, trying fallback...');
+        const publicIP = await getPublicIP();
+        
+        if (publicIP) {
+          // Fallback: Get location from IP using ipwho.is API
+          ipLocation = await getIPLocation(publicIP);
+        }
       }
 
-      // Get location from IP using ipwho.is API
-      const ipLocation = await getIPLocation(publicIP);
-
       if (!ipLocation) {
-        throw new Error('Could not fetch location data');
+        throw new Error('Could not fetch location data from ipwho.is');
       }
 
       // Convert IP location to LocationInfo format
@@ -368,7 +374,7 @@ export class LocationDetector {
         permission: 'granted', // IP location doesn't require permission
         source: 'ip',
         ts: new Date().toISOString(),
-        ip: ipLocation.ip || publicIP,
+        ip: ipLocation.ip || undefined,
         country: ipLocation.country || undefined,
         countryCode: ipLocation.country_code || ipLocation.countryCode || undefined,
         city: ipLocation.city || undefined,
@@ -380,7 +386,7 @@ export class LocationDetector {
       // This preserves all dynamic keys from the API response
       (locationResult as any).ipLocationData = ipLocation;
 
-      console.log('[Location] IP-based location obtained:', {
+      console.log('[Location] IP-based location obtained from ipwho.is:', {
         ip: locationResult.ip,
         lat: locationResult.lat,
         lon: locationResult.lon,
@@ -388,6 +394,8 @@ export class LocationDetector {
         country: locationResult.country,
         continent: ipLocation.continent,
         timezone: locationResult.timezone,
+        isp: ipLocation.connection?.isp,
+        connection: ipLocation.connection,
       });
 
       this.lastIPLocationRef.current = locationResult;

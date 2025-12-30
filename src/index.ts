@@ -57,7 +57,8 @@ export {
   checkAndSetLocationConsent,
 } from './utils/location-consent';
 
-export { getIPLocation, getIPFromRequest, getPublicIP } from './utils/ip-geolocation';
+export { getCompleteIPLocation, getIPLocation, getIPFromRequest, getPublicIP } from './utils/ip-geolocation';
+export { transformIPLocationForBackend } from './utils/ip-location-transformer';
 
 // Logger utility
 export { logger } from './utils/logger';
