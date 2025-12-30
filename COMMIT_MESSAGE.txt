@@ -1,37 +1,8 @@
-feat: optimize essential mode with deduplication and reduced deviceInfo fields
+feat: optimize essential mode and use ipwho.is connection data
 
-BREAKING CHANGE: Essential mode deviceInfo now stores only 8 fields instead of 15
+- Reduce deviceInfo to 8 essential fields
+- Remove browser-based networkInfo, use ipwho.is connection instead
+- Add automatic deduplication and null value removal
+- Update documentation with comprehensive essential mode guide
 
-## Changes
-
-### Core Optimizations
-- Reduce deviceInfo essential fields from 15 to 8 (type, os, osVersion, browser, browserVersion, deviceModel, deviceBrand, userAgent)
-- Implement automatic deduplication between location and customData.ipLocation in essential mode
-- Remove duplicate fields (ip, country, countryCode, city, region, timezone) from location object when IP location data exists
-- Add null/undefined value removal from filtered objects to reduce payload size
-- Improve nested object handling in field storage transformer
-
-### Field Storage Improvements
-- Add generic field storage transformer for all data types (ipLocation, deviceInfo, networkInfo, location, attribution)
-- Support essential/all/custom modes for all data types
-- Implement recursive null value cleaning for nested objects
-- Add mode-aware deduplication logic
-
-### Documentation
-- Merge and consolidate essential mode documentation into comprehensive guide
-- Add essential-mode-guide.md with complete field breakdown
-- Update documentation index with new guide
-- Add example payload JSON in docs/examples/
-- Update all documentation to reflect new deviceInfo fields
-
-### Technical Details
-- Location object in essential mode now only stores: lat, lon, source, ts (4 fields)
-- All IP-related data stored exclusively in customData.ipLocation
-- Payload size reduction: ~30-40% fewer fields, ~700 bytes saved per event
-- Backward compatible: existing configurations still work
-
-## Impact
-- Significantly smaller payloads in essential mode
-- No duplicate data storage
-- All crucial information still preserved
-- Better storage optimization for high-volume analytics
+BREAKING CHANGE: Essential mode deviceInfo now has 8 fields, networkInfo removed

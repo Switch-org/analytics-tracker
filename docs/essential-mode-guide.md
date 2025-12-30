@@ -52,29 +52,29 @@ Essential mode **WILL save** all the data you need:
 
 ---
 
-### 2. **networkInfo** (5 Essential Fields)
+### 2. **networkInfo** (Not Stored in Essential Mode)
 
-**Stored Fields:**
-- `type` - Connection type (wifi, cellular, ethernet)
-- `effectiveType` - Effective connection type (2g, 3g, 4g, 5g)
-- `downlink` - Downlink speed (Mbps)
-- `rtt` - Round-trip time (ms)
-- `saveData` - Data saver mode enabled
+**⚠️ Important:** In essential mode, `networkInfo` is **not stored**. 
 
-**Example:**
+**Why?** Browser-based network detection is often inaccurate. Instead, we use the more accurate connection data from the `ipwho.is` API, which is stored in `customData.ipLocation.connection`.
+
+**Connection data is available in:**
 ```json
 {
-  "networkInfo": {
-    "type": "wifi",
-    "effectiveType": "4g",
-    "downlink": 7.95,
-    "rtt": 150,
-    "saveData": false
+  "customData": {
+    "ipLocation": {
+      "connection": {
+        "asn": 17557,
+        "org": "Hsi Pool on Isb Bras",
+        "isp": "Pakistan Telecommuication Company Limited",
+        "domain": "ptcl.net.pk"
+      }
+    }
   }
 }
 ```
 
-**All crucial network metrics are included!**
+**If you need browser-based networkInfo**, you can still get it by setting `networkInfo: { mode: 'all' }` in your configuration, but it's not recommended as the connection data from `ipwho.is` is more accurate.
 
 ---
 
@@ -275,12 +275,12 @@ Essential mode automatically removes duplicate fields to minimize payload size:
 | Data Type | Essential Fields | Total Keys |
 |-----------|------------------|------------|
 | **deviceInfo** | 8 | 8 |
-| **networkInfo** | 5 | 5 |
+| **networkInfo** | 0 (not stored) | 0 |
 | **location** | 4 | 4 |
 | **attribution** | ~8-13 (nulls removed) | ~8-13 |
-| **customData.ipLocation** | ~20 | ~20 |
+| **customData.ipLocation** | ~20 (includes connection) | ~20 |
 | **customData** (your data) | All your fields | Variable |
-| **Total** | ~45-50 + your custom data | **Optimized!** |
+| **Total** | ~40-45 + your custom data | **Optimized!** |
 
 ### Size Reduction
 
@@ -360,10 +360,10 @@ AnalyticsService.init({
 
 Essential mode stores:
 - ✅ All device/browser info you need (8 fields)
-- ✅ All network metrics you need (5 fields)
+- ✅ All connection details from ipwho.is (in customData.ipLocation.connection)
 - ✅ All location data you need (coordinates + IP location)
-- ✅ All connection details you need
 - ✅ All your custom data
+- ❌ No browser-based networkInfo (inaccurate - use ipwho.is connection instead)
 - ❌ No unnecessary fields
 - ❌ No duplicates
 - ❌ No bloat

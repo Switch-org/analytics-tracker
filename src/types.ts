@@ -238,6 +238,10 @@ export const DEFAULT_ESSENTIAL_DEVICE_FIELDS = [
 
 /**
  * Default essential fields for Network Info storage
+ * 
+ * NOTE: In essential mode, networkInfo is not stored.
+ * Connection data from ipwho.is API (in customData.ipLocation.connection) is used instead,
+ * as it provides more accurate network/ISP information.
  */
 export const DEFAULT_ESSENTIAL_NETWORK_FIELDS = [
   'type',

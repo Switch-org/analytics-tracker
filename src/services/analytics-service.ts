@@ -354,11 +354,19 @@ export class AnalyticsService {
       DEFAULT_ESSENTIAL_DEVICE_FIELDS
     );
     
-    const filteredNetworkInfo = filterFieldsByConfig(
-      networkInfo,
-      fieldStorage.networkInfo,
-      DEFAULT_ESSENTIAL_NETWORK_FIELDS
-    );
+    // In essential mode, don't store browser-based networkInfo
+    // Connection data from ipwho.is (in customData.ipLocation.connection) is more accurate
+    const networkInfoConfig = fieldStorage.networkInfo;
+    const networkInfoMode = networkInfoConfig?.mode || 'essential';
+    
+    // Skip networkInfo in essential mode - use connection from ipwho.is instead
+    const filteredNetworkInfo = networkInfoMode === 'essential' 
+      ? undefined 
+      : filterFieldsByConfig(
+          networkInfo,
+          networkInfoConfig,
+          DEFAULT_ESSENTIAL_NETWORK_FIELDS
+        );
     
     // For location: In essential mode, remove duplicate fields that are already in customData.ipLocation
     // This prevents storing the same data twice (e.g., ip, country, city, region, timezone)
@@ -468,15 +476,15 @@ export class AnalyticsService {
         try {
           // Import dynamically to avoid circular dependencies
           const { getOrCreateUserId } = await import('../utils/storage');
-          const { NetworkDetector } = await import('../detectors/network-detector');
           const { DeviceDetector } = await import('../detectors/device-detector');
           const { LocationDetector } = await import('../detectors/location-detector');
           const { AttributionDetector } = await import('../detectors/attribution-detector');
 
+          // Don't collect networkInfo - use connection from ipwho.is instead (more accurate)
           autoContext = {
             sessionId: getOrCreateUserId(),
             pageUrl: window.location.href,
-            networkInfo: NetworkDetector.detect(),
+            // networkInfo removed - use customData.ipLocation.connection from ipwho.is instead
             deviceInfo: await DeviceDetector.detect(),
             location: await LocationDetector.detect().catch(() => undefined),
             attribution: AttributionDetector.detect(),
@@ -523,11 +531,19 @@ export class AnalyticsService {
       DEFAULT_ESSENTIAL_DEVICE_FIELDS
     );
     
-    const filteredNetworkInfo = filterFieldsByConfig(
-      context?.networkInfo || autoContext?.networkInfo,
-      fieldStorage.networkInfo,
-      DEFAULT_ESSENTIAL_NETWORK_FIELDS
-    );
+    // In essential mode, don't store browser-based networkInfo
+    // Connection data from ipwho.is (in customData.ipLocation.connection) is more accurate
+    const networkInfoConfig = fieldStorage.networkInfo;
+    const networkInfoMode = networkInfoConfig?.mode || 'essential';
+    
+    // Skip networkInfo in essential mode - use connection from ipwho.is instead
+    const filteredNetworkInfo = networkInfoMode === 'essential' 
+      ? undefined 
+      : filterFieldsByConfig(
+          context?.networkInfo || autoContext?.networkInfo,
+          networkInfoConfig,
+          DEFAULT_ESSENTIAL_NETWORK_FIELDS
+        );
     
     // For location: In essential mode, remove duplicate fields that are already in customData.ipLocation
     const locationConfig = fieldStorage.location;

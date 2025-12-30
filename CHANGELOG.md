@@ -1,3 +1,23 @@
+# [2.3.0](https://github.com/switch-org/analytics-tracker/compare/v2.2.0...v2.3.0) (2025-12-30)
+
+### Features
+
+* **Essential Mode Optimization**: Reduced deviceInfo fields from 15 to 8 essential fields
+* **Deduplication**: Automatic removal of duplicate fields between location and customData.ipLocation
+* **Network Info Removal**: Removed browser-based networkInfo in essential mode, using accurate connection data from ipwho.is instead
+
+### Improvements
+
+* **Payload Size Reduction**: ~30-40% smaller payloads in essential mode
+* **Null Value Removal**: Automatic cleanup of null/undefined values from filtered objects
+* **Better Connection Data**: Connection info (ASN, org, isp, domain) now comes from ipwho.is API (more accurate than browser detection)
+* **Documentation**: Comprehensive essential mode guide with field breakdowns and examples
+
+### Breaking Changes
+
+* Essential mode deviceInfo now stores only 8 fields (type, os, osVersion, browser, browserVersion, deviceModel, deviceBrand, userAgent)
+* networkInfo is not stored in essential mode - use `customData.ipLocation.connection` instead
+
 # [2.2.0](https://github.com/switch-org/analytics-tracker/compare/v2.1.0...v2.2.0) (2025-12-30)
 
 

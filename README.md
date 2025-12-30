@@ -11,7 +11,7 @@ A comprehensive, lightweight analytics tracking library for React applications. 
 ## ✨ Features
 
 - 🔍 **Device Detection**: Automatically detects device type, OS, browser, model, brand, and hardware specs using User-Agent Client Hints
-- 🌐 **Network Detection**: Identifies WiFi, Cellular, Hotspot, Ethernet connections with quality metrics
+- 🌐 **Network & Connection Info**: Accurate ISP and connection details from ipwho.is API (ASN, organization, domain)
 - 📍 **Location Tracking**: 
   - **IP-based location** - Requires user consent (privacy-compliant)
   - **GPS location** - Requires explicit user consent and browser permission
@@ -96,9 +96,9 @@ const analytics = useAnalytics({
     
     // Field storage configuration (optional) - control which fields are stored
     fieldStorage: {
-      ipLocation: { mode: 'essential' },    // IP location fields
+      ipLocation: { mode: 'essential' },    // IP location fields (includes connection data)
       deviceInfo: { mode: 'essential' },   // Device info fields
-      networkInfo: { mode: 'essential' },  // Network info fields
+      // networkInfo: Not stored in essential mode - use connection from ipwho.is instead
       location: { mode: 'essential' },     // Location fields
       attribution: { mode: 'essential' },   // Attribution fields
       // Each can be: 'essential' (default) | 'all' | 'custom'
@@ -226,7 +226,6 @@ import { useAnalytics } from 'user-analytics-tracker';
 function MyApp() {
   const { 
     sessionId, 
-    networkInfo, 
     deviceInfo, 
     location, 
     trackEvent, 
@@ -257,7 +256,7 @@ function MyApp() {
   return (
     <div>
       <p>Device: {deviceInfo?.deviceBrand} {deviceInfo?.deviceModel}</p>
-      <p>Network: {networkInfo?.type}</p>
+      {/* Connection data from ipwho.is (in customData.ipLocation.connection) */}
       <button onClick={handleButtonClick}>
         Track Click
       </button>
@@ -758,18 +757,11 @@ Detect and restrict hotspot users:
 ```tsx
 import { useAnalytics } from 'user-analytics-tracker';
 
-function HotspotGate({ children }) {
-  const { networkInfo } = useAnalytics({ autoSend: false });
-  
-  if (networkInfo?.type === 'hotspot') {
-    return (
-      <div>
-        <h2>Hotspot Detected</h2>
-        <p>Please switch to mobile data or Wi-Fi.</p>
-      </div>
-    );
-  }
-  
+// Note: networkInfo is no longer available in essential mode
+// Connection data is available in customData.ipLocation.connection from ipwho.is
+function ConnectionInfo({ children }) {
+  // Connection info comes from ipwho.is API in analytics events
+  // Access via: customData.ipLocation.connection (asn, org, isp, domain)
   return children;
 }
 ```
@@ -988,8 +980,8 @@ MIT © [Switch Org](https://github.com/switch-org)
 
 ## 🙏 Acknowledgments
 
-- Uses [ipwho.is](https://ipwho.is/) for free IP geolocation
-- Built with modern web APIs (User-Agent Client Hints, Network Information API, Geolocation API)
+- Uses [ipwho.is](https://ipwho.is/) for free IP geolocation and accurate connection data
+- Built with modern web APIs (User-Agent Client Hints, Geolocation API)
 
 <!-- ## 📞 Support
 

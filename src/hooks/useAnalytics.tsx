@@ -11,7 +11,8 @@ import type {
   UseAnalyticsReturn,
   AnalyticsConfig,
 } from '../types';
-import { NetworkDetector } from '../detectors/network-detector';
+// NetworkDetector removed - use connection from ipwho.is instead (more accurate)
+// import { NetworkDetector } from '../detectors/network-detector';
 import { DeviceDetector } from '../detectors/device-detector';
 import { LocationDetector } from '../detectors/location-detector';
 import { AttributionDetector } from '../detectors/attribution-detector';
@@ -108,7 +109,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
   }, []);
 
   const refresh = useCallback(async () => {
-    const net = NetworkDetector.detect();
+    // Don't collect networkInfo - use connection from ipwho.is instead (more accurate)
+    // const net = NetworkDetector.detect(); // Removed - use ipwho.is connection instead
     const dev = await DeviceDetector.detect();
     const attr = AttributionDetector.detect();
     const uid = getOrCreateUserId();
@@ -155,7 +157,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
       }
     }
 
-    setNetworkInfo(net);
+    // networkInfo removed - use connection from ipwho.is instead
+    setNetworkInfo(null); // Set to null - connection data comes from ipwho.is
     setDeviceInfo(dev);
     setAttribution(attr);
     setSessionId(uid);
@@ -166,14 +169,15 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
     if (onReady && !sessionLoggedRef.current) {
       onReady({
         sessionId: uid,
-        networkInfo: net,
+        networkInfo: null as any, // Use connection from ipwho.is instead (more accurate)
         deviceInfo: dev,
         location: loc,
         attribution: attr,
       });
     }
 
-    return { net, dev, attr, loc };
+    // Return null for net - connection data comes from ipwho.is instead
+    return { net: null as any, dev, attr, loc }; // net is null - use ipwho.is connection instead
   }, [onReady]);
 
   // Initialize on mount
