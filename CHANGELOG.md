@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/switch-org/analytics-tracker/compare/v2.1.0...v2.2.0) (2025-12-30)
+
+
+### Features
+
+* ip-location, connection update with ipwho-is api ([fa1b369](https://github.com/switch-org/analytics-tracker/commit/fa1b36997ecad6f71c758f738c768090529bb2b0))
+
 # [2.1.0](https://github.com/switch-org/analytics-tracker/compare/v2.0.0...v2.1.0) (2025-12-29)
 
 
