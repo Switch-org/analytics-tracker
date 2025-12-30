@@ -147,7 +147,136 @@ export interface AnalyticsConfig {
   logLevel?: LogLevel; // Logging verbosity (default: 'warn')
   // Metrics configuration
   enableMetrics?: boolean; // Enable metrics collection (default: false)
+  // Field storage configuration - control which fields are stored for each data type
+  fieldStorage?: {
+    // IP Location storage configuration
+    ipLocation?: FieldStorageConfig; // Configure which IP location fields to store
+    // Device Info storage configuration
+    deviceInfo?: FieldStorageConfig; // Configure which device fields to store
+    // Network Info storage configuration
+    networkInfo?: FieldStorageConfig; // Configure which network fields to store
+    // Location Info storage configuration
+    location?: FieldStorageConfig; // Configure which location fields to store
+    // Attribution Info storage configuration
+    attribution?: FieldStorageConfig; // Configure which attribution fields to store
+  };
+  // Legacy: IP Location storage configuration (for backward compatibility)
+  ipLocationFields?: IPLocationFieldConfig; // Configure which IP location fields to store
 }
+
+/**
+ * General field storage configuration
+ * Allows users to customize which fields are stored to optimize storage capacity
+ */
+export interface FieldStorageConfig {
+  // Field inclusion mode
+  mode?: 'essential' | 'all' | 'custom'; // Default: 'essential'
+  
+  // Custom field whitelist (only used when mode is 'custom')
+  // Specify which fields to include. Use dot notation for nested fields (e.g., 'connection.asn')
+  fields?: string[];
+  
+  // Field exclusion list (used with 'all' mode to exclude specific fields)
+  exclude?: string[];
+}
+
+/**
+ * Configuration for IP location field storage
+ * @deprecated Use FieldStorageConfig instead. This is kept for backward compatibility.
+ */
+export type IPLocationFieldConfig = FieldStorageConfig;
+
+/**
+ * Default essential fields for IP location storage
+ * These fields are stored when mode is 'essential' (default)
+ */
+export const DEFAULT_ESSENTIAL_IP_FIELDS = [
+  // Core identification
+  'ip',
+  'country',
+  'countryCode',
+  'region',
+  'city',
+  // Geographic coordinates (stored here, not duplicated in location)
+  'lat',
+  'lon',
+  // Additional geographic info
+  'continent',
+  'continentCode',
+  // Network info
+  'type',
+  'isEu',
+  'isp',
+  'connection',
+  'connection.asn',
+  'connection.org',
+  'connection.isp',
+  'connection.domain',
+  // Timezone (stored here, not duplicated in location)
+  'timezone',
+  'timezoneDetails',
+  'timezoneDetails.id',
+  'timezoneDetails.abbr',
+  'timezoneDetails.utc',
+  // Flag (only emoji in essential mode)
+  'flag.emoji',
+] as const;
+
+/**
+ * Default essential fields for Device Info storage
+ */
+export const DEFAULT_ESSENTIAL_DEVICE_FIELDS = [
+  'type',
+  'os',
+  'osVersion',
+  'browser',
+  'browserVersion',
+  'deviceModel',
+  'deviceBrand',
+  'userAgent',
+] as const;
+
+/**
+ * Default essential fields for Network Info storage
+ */
+export const DEFAULT_ESSENTIAL_NETWORK_FIELDS = [
+  'type',
+  'effectiveType',
+  'downlink',
+  'rtt',
+  'saveData',
+] as const;
+
+/**
+ * Default essential fields for Location Info storage
+ */
+export const DEFAULT_ESSENTIAL_LOCATION_FIELDS = [
+  // Minimal location fields - only coordinates and source
+  // All IP-related data (ip, country, city, etc.) is stored in customData.ipLocation to avoid duplication
+  'lat',
+  'lon',
+  'source',
+  'ts',
+] as const;
+
+/**
+ * Default essential fields for Attribution Info storage
+ */
+export const DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS = [
+  'landingUrl',
+  'path',
+  'hostname',
+  'referrerUrl',
+  'referrerDomain',
+  'navigationType',
+  'isReload',
+  'isBackForward',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+] as const;
 
 export interface AnalyticsEvent {
   sessionId: string;

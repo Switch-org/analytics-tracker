@@ -16,6 +16,15 @@ export type {
   AnalyticsConfig,
   AnalyticsEvent,
   UseAnalyticsReturn,
+  IPLocationFieldConfig,
+  FieldStorageConfig,
+} from './types';
+export {
+  DEFAULT_ESSENTIAL_IP_FIELDS,
+  DEFAULT_ESSENTIAL_DEVICE_FIELDS,
+  DEFAULT_ESSENTIAL_NETWORK_FIELDS,
+  DEFAULT_ESSENTIAL_LOCATION_FIELDS,
+  DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS,
 } from './types';
 
 // Detectors
@@ -59,6 +68,8 @@ export {
 
 export { getCompleteIPLocation, getIPLocation, getIPFromRequest, getPublicIP } from './utils/ip-geolocation';
 export { transformIPLocationForBackend } from './utils/ip-location-transformer';
+export { filterFieldsByConfig } from './utils/field-storage-transformer';
+export type { FieldStorageConfig as FieldStorageConfigType } from './utils/field-storage-transformer';
 
 // Logger utility
 export { logger } from './utils/logger';

@@ -1,18 +1,25 @@
-import type { IPLocation } from '../types';
+import type { IPLocation, FieldStorageConfig } from '../types';
+import { DEFAULT_ESSENTIAL_IP_FIELDS } from '../types';
+import { filterFieldsByConfig } from './field-storage-transformer';
 
 /**
  * Transform IP location data from API format (snake_case) to backend-expected format (camelCase)
- * This ensures compatibility with the analytics backend integration
+ * Supports configurable field storage to optimize storage capacity
  * 
  * @param ipLocation - Raw IP location data from ipwho.is API
- * @returns Transformed IP location data matching backend schema
+ * @param config - Optional configuration for which fields to store
+ * @returns Transformed IP location data matching backend schema (only includes configured fields)
  */
-export function transformIPLocationForBackend(ipLocation: IPLocation | null): Record<string, any> | null {
+export function transformIPLocationForBackend(
+  ipLocation: IPLocation | null,
+  config?: FieldStorageConfig
+): Record<string, any> | null {
   if (!ipLocation) {
     return null;
   }
 
   // Transform to match backend expected format (camelCase)
+  // Build complete object first, then filter based on configuration
   const transformed: Record<string, any> = {
     // Basic fields
     ip: ipLocation.ip,
@@ -51,9 +58,11 @@ export function transformIPLocationForBackend(ipLocation: IPLocation | null): Re
     timezoneDetails: ipLocation.timezone && typeof ipLocation.timezone === 'object' ? {
       id: ipLocation.timezone.id,
       abbr: ipLocation.timezone.abbr,
+      utc: ipLocation.timezone.utc,
+      // Exclude these in essential mode: isDst, offset, currentTime
+      // They will be filtered out by filterFieldsByConfig if not in essential fields
       isDst: ipLocation.timezone.is_dst,
       offset: ipLocation.timezone.offset,
-      utc: ipLocation.timezone.utc,
       currentTime: ipLocation.timezone.current_time,
     } : undefined,
     
@@ -72,6 +81,11 @@ export function transformIPLocationForBackend(ipLocation: IPLocation | null): Re
     }
   });
 
-  return transformed;
+  // Filter fields based on configuration using generic filter
+  return filterFieldsByConfig(
+    transformed,
+    config,
+    DEFAULT_ESSENTIAL_IP_FIELDS
+  );
 }
 

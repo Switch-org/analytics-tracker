@@ -27,6 +27,19 @@ Welcome to the `user-analytics-tracker` documentation. This directory contains c
    - New features and improvements
    - Troubleshooting upgrade issues
 
+4. **[Field Storage Configuration](./ip-location-configuration.md)** - Configure field storage for all data types
+   - Storage optimization for IP location, device, network, location, attribution
+   - Essential vs all vs custom modes
+   - Per-data-type configuration
+   - Storage best practices and optimization tips
+
+5. **[Essential Mode Guide](./essential-mode-guide.md)** - Complete guide to Essential Mode
+   - What data is stored in essential mode
+   - Field-by-field breakdown for each data type
+   - Deduplication and optimization details
+   - Payload size reduction and benefits
+   - Usage examples and configuration
+
 ### For Developers
 
 3. **[Package Structure](./package-structure.md)** - Understanding the codebase

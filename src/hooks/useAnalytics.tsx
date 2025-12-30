@@ -59,6 +59,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
         logLevel: config.logLevel,
         enableMetrics: config.enableMetrics,
         sessionTimeout: config.sessionTimeout,
+        fieldStorage: config.fieldStorage,
+        ipLocationFields: config.ipLocationFields, // Legacy support
       });
     }
   }, [

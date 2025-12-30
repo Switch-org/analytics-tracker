@@ -1,0 +1,88 @@
+[
+  {
+    "sessionId": "SY6guJua",
+    "pageUrl": "http://localhost:3000/pk-zong-daily",
+    
+    "networkInfo": {
+      "type": "wifi",
+      "effectiveType": "4g",
+      "downlink": 7.95,
+      "rtt": 150,
+      "saveData": false
+    },
+    
+    "deviceInfo": {
+      "type": "desktop",
+      "os": "macOS",
+      "osVersion": "15.2.0",
+      "browser": "Chrome",
+      "browserVersion": "143.0",
+      "deviceModel": "Apple",
+      "deviceBrand": "Apple",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+    },
+    
+    "location": {
+      "lat": 34.0149748,
+      "lon": 71.5804899,
+      "source": "ip",
+      "ts": "2025-12-30T13:35:54.398Z"
+    },
+    
+    "attribution": {
+      "landingUrl": "http://localhost:3000/pk-zong-daily",
+      "path": "/pk-zong-daily",
+      "hostname": "localhost",
+      "navigationType": "reload",
+      "isReload": true,
+      "isBackForward": false
+    },
+    
+    "userId": "SY6guJua",
+    
+    "customData": {
+      "eventType": "msisdn_submitted",
+      "msisdn": "923347404607",
+      "operator": "zong",
+      "network_type": "prepaid",
+      "service_id": 1,
+      "page": "pk-zong-daily",
+      "company": "web",
+      
+      "ipLocation": {
+        "ip": "203.99.191.157",
+        "country": "Pakistan",
+        "countryCode": "PK",
+        "region": "Khyber Pakhtunkhwa",
+        "city": "Peshawar",
+        "continent": "Asia",
+        "continentCode": "AS",
+        "lat": 34.0149748,
+        "lon": 71.5804899,
+        "type": "IPv4",
+        "isEu": false,
+        "isp": "Pakistan Telecommuication Company Limited",
+        "connection": {
+          "asn": 17557,
+          "org": "Hsi Pool on Isb Bras",
+          "isp": "Pakistan Telecommuication Company Limited",
+          "domain": "ptcl.net.pk"
+        },
+        "timezone": "Asia/Karachi",
+        "timezoneDetails": {
+          "id": "Asia/Karachi",
+          "abbr": "PKT",
+          "utc": "+05:00"
+        },
+        "flag": {
+          "emoji": "🇵🇰"
+        }
+      }
+    },
+    
+    "eventName": "page_view",
+    "timestamp": "2025-12-30T13:36:01.159Z",
+    "eventId": "1f631f2c94d79effcde380dd63b478c5"
+  }
+]
+

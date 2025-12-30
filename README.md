@@ -93,6 +93,21 @@ const analytics = useAnalytics({
     
     // Metrics configuration
     enableMetrics: false,       // Enable metrics collection (default: false)
+    
+    // Field storage configuration (optional) - control which fields are stored
+    fieldStorage: {
+      ipLocation: { mode: 'essential' },    // IP location fields
+      deviceInfo: { mode: 'essential' },   // Device info fields
+      networkInfo: { mode: 'essential' },  // Network info fields
+      location: { mode: 'essential' },     // Location fields
+      attribution: { mode: 'essential' },   // Attribution fields
+      // Each can be: 'essential' (default) | 'all' | 'custom'
+      // For 'custom': specify fields array
+      // For 'all': specify exclude array
+    },
+    
+    // Legacy: IP Location storage (backward compatible)
+    ipLocationFields: { mode: 'essential' },
   },
 });
 ```

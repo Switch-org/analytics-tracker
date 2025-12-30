@@ -1,9 +1,16 @@
-import type { AnalyticsEvent, NetworkInfo, DeviceInfo, AttributionInfo, AnalyticsConfig, LogLevel } from '../types';
+import type { AnalyticsEvent, NetworkInfo, DeviceInfo, AttributionInfo, AnalyticsConfig, LogLevel, LocationInfo } from '../types';
 import { QueueManager } from '../utils/queue-manager';
 import { logger } from '../utils/logger';
 import { pluginManager } from '../plugins/plugin-manager';
 import { metricsCollector } from '../utils/metrics';
 import { transformIPLocationForBackend } from '../utils/ip-location-transformer';
+import { filterFieldsByConfig } from '../utils/field-storage-transformer';
+import {
+  DEFAULT_ESSENTIAL_DEVICE_FIELDS,
+  DEFAULT_ESSENTIAL_NETWORK_FIELDS,
+  DEFAULT_ESSENTIAL_LOCATION_FIELDS,
+  DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS,
+} from '../types';
 
 /**
  * Analytics Service
@@ -331,21 +338,76 @@ export class AnalyticsService {
     pageVisits?: number;
     interactions?: number;
   }): Promise<void> {
-    // Transform IP location data to match backend expected format (camelCase)
-    const transformedIPLocation = transformIPLocationForBackend(ipLocation);
+    // Get field storage config (support both new and legacy format)
+    const fieldStorage = this.config.fieldStorage || {};
+    const ipLocationConfig = fieldStorage.ipLocation || this.config.ipLocationFields;
+    
+    // Transform and filter all data types based on configuration
+    const transformedIPLocation = transformIPLocationForBackend(
+      ipLocation,
+      ipLocationConfig
+    );
+    
+    const filteredDeviceInfo = filterFieldsByConfig(
+      deviceInfo,
+      fieldStorage.deviceInfo,
+      DEFAULT_ESSENTIAL_DEVICE_FIELDS
+    );
+    
+    const filteredNetworkInfo = filterFieldsByConfig(
+      networkInfo,
+      fieldStorage.networkInfo,
+      DEFAULT_ESSENTIAL_NETWORK_FIELDS
+    );
+    
+    // For location: In essential mode, remove duplicate fields that are already in customData.ipLocation
+    // This prevents storing the same data twice (e.g., ip, country, city, region, timezone)
+    const locationConfig = fieldStorage.location;
+    const locationMode = locationConfig?.mode || 'essential';
+    
+    let filteredLocation = filterFieldsByConfig(
+      location as LocationInfo,
+      locationConfig,
+      DEFAULT_ESSENTIAL_LOCATION_FIELDS
+    );
+    
+    // In essential mode, if we have IP location data, remove duplicate fields from location
+    // to avoid storing the same data twice
+    if (locationMode === 'essential' && transformedIPLocation && filteredLocation) {
+      // Remove fields that are duplicated in customData.ipLocation
+      const duplicateFields = ['ip', 'country', 'countryCode', 'city', 'region', 'timezone'];
+      const minimalLocation: any = { ...filteredLocation };
+      duplicateFields.forEach(field => {
+        delete minimalLocation[field];
+      });
+      // Only keep essential location fields: lat, lon, source, ts
+      filteredLocation = {
+        lat: minimalLocation.lat,
+        lon: minimalLocation.lon,
+        source: minimalLocation.source,
+        ts: minimalLocation.ts,
+      } as LocationInfo;
+    }
+    
+    const filteredAttribution = filterFieldsByConfig(
+      attribution,
+      fieldStorage.attribution,
+      DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS
+    );
 
     await this.trackEvent({
       sessionId,
       pageUrl,
-      networkInfo,
-      deviceInfo,
-      location,
-      attribution,
-      ipLocation,
+      networkInfo: filteredNetworkInfo || undefined,
+      deviceInfo: filteredDeviceInfo || undefined,
+      location: filteredLocation || undefined,
+      attribution: filteredAttribution || undefined,
+      // Don't include raw ipLocation - we have the filtered/transformed version in customData
+      ipLocation: undefined,
       userId: userId ?? sessionId,
       customData: {
         ...customData,
-        // Store transformed IP location in customData for backend integration
+        // Store transformed and filtered IP location in customData for backend integration
         ...(transformedIPLocation && { ipLocation: transformedIPLocation }),
       },
       eventName: 'page_view', // Auto-tracked as page view
@@ -445,16 +507,68 @@ export class AnalyticsService {
       ? (locationData as any)?.ipLocationData 
       : undefined;
     
-    // Transform IP location data to match backend expected format
-    const transformedIPLocation = transformIPLocationForBackend(ipLocationData);
+    // Get field storage config (support both new and legacy format)
+    const fieldStorage = this.config.fieldStorage || {};
+    const ipLocationConfig = fieldStorage.ipLocation || this.config.ipLocationFields;
+    
+    // Transform and filter all data types based on configuration
+    const transformedIPLocation = transformIPLocationForBackend(
+      ipLocationData,
+      ipLocationConfig
+    );
+    
+    const filteredDeviceInfo = filterFieldsByConfig(
+      context?.deviceInfo || autoContext?.deviceInfo,
+      fieldStorage.deviceInfo,
+      DEFAULT_ESSENTIAL_DEVICE_FIELDS
+    );
+    
+    const filteredNetworkInfo = filterFieldsByConfig(
+      context?.networkInfo || autoContext?.networkInfo,
+      fieldStorage.networkInfo,
+      DEFAULT_ESSENTIAL_NETWORK_FIELDS
+    );
+    
+    // For location: In essential mode, remove duplicate fields that are already in customData.ipLocation
+    const locationConfig = fieldStorage.location;
+    const locationMode = locationConfig?.mode || 'essential';
+    
+    let filteredLocation = filterFieldsByConfig(
+      (context?.location || autoContext?.location) as LocationInfo,
+      locationConfig,
+      DEFAULT_ESSENTIAL_LOCATION_FIELDS
+    );
+    
+    // In essential mode, if we have IP location data, remove duplicate fields from location
+    if (locationMode === 'essential' && transformedIPLocation && filteredLocation) {
+      // Remove fields that are duplicated in customData.ipLocation
+      const duplicateFields = ['ip', 'country', 'countryCode', 'city', 'region', 'timezone'];
+      const minimalLocation: any = { ...filteredLocation };
+      duplicateFields.forEach(field => {
+        delete minimalLocation[field];
+      });
+      // Only keep essential location fields: lat, lon, source, ts
+      filteredLocation = {
+        lat: minimalLocation.lat,
+        lon: minimalLocation.lon,
+        source: minimalLocation.source,
+        ts: minimalLocation.ts,
+      } as LocationInfo;
+    }
+    
+    const filteredAttribution = filterFieldsByConfig(
+      context?.attribution || autoContext?.attribution,
+      fieldStorage.attribution,
+      DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS
+    );
 
     await this.trackEvent({
       sessionId: finalSessionId,
       pageUrl: finalPageUrl,
-      networkInfo: context?.networkInfo || autoContext?.networkInfo,
-      deviceInfo: context?.deviceInfo || autoContext?.deviceInfo,
-      location: context?.location || autoContext?.location,
-      attribution: context?.attribution || autoContext?.attribution,
+      networkInfo: filteredNetworkInfo || undefined,
+      deviceInfo: filteredDeviceInfo || undefined,
+      location: filteredLocation || undefined,
+      attribution: filteredAttribution || undefined,
       userId: context?.userId || finalSessionId,
       eventName,
       eventParameters: parameters || {},
