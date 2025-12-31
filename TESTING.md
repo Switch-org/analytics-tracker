@@ -298,10 +298,10 @@ AnalyticsService.trackPageView('/product/123', {
   product_id: '123',
   product_name: 'Product Name'
 });
-AnalyticsService.trackPageView('/checkout');
+AnalyticsService.trackPageView('/checkout');  
 ```
 
-## Need Help?
+## Need Help? 
 
 If you encounter issues:
 

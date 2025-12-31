@@ -1,3 +1,26 @@
+## [4.1.1](https://github.com/Switch-org/analytics-tracker/compare/v4.1.0...v4.1.1) (2025-12-31)
+
+
+### Bug Fixes
+
+* chore(deps-dev): bump @typescript-eslint/eslint-plugin ([#6](https://github.com/Switch-org/analytics-tracker/issues/6)) ([2a4e501](https://github.com/Switch-org/analytics-tracker/commit/2a4e501cd574f7182bed6c507a6cdd0b8f7405d8))
+
+# [4.1.0](https://github.com/Switch-org/analytics-tracker/compare/v4.0.0...v4.1.0) (2025-12-31)
+
+
+### Bug Fixes
+
+* testing workflow ([6af7993](https://github.com/Switch-org/analytics-tracker/commit/6af79937bdeafd6f19ec702cb8d5e44cdf3ed582))
+* testing workflow ([c74d72e](https://github.com/Switch-org/analytics-tracker/commit/c74d72e7fc690424e084eabd7a1253d32015ee18))
+* update releasesrc.json ([#18](https://github.com/Switch-org/analytics-tracker/issues/18)) ([ae33f2e](https://github.com/Switch-org/analytics-tracker/commit/ae33f2e356b90b37623314173341dcad89ce017e))
+* updated workflow pub/se ([#17](https://github.com/Switch-org/analytics-tracker/issues/17)) ([d18279e](https://github.com/Switch-org/analytics-tracker/commit/d18279e6fb8a6720f0f3a8439e69c5a4a94e0f36))
+
+
+### Features
+
+* security checks ([d9e6aa2](https://github.com/Switch-org/analytics-tracker/commit/d9e6aa24ca86dec3e6ce9736a2e6f9eb4d3e5240))
+* test push ([#16](https://github.com/Switch-org/analytics-tracker/issues/16)) ([346f91f](https://github.com/Switch-org/analytics-tracker/commit/346f91ff8d43bd77d47146a7deed315816a3b5fc))
+
 # [4.0.0](https://github.com/switch-org/analytics-tracker/compare/v3.0.0...v4.0.0) (2025-12-30)
 
 
