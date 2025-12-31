@@ -291,7 +291,7 @@ AnalyticsService.logEvent('share', {
 ### Scenario 3: Page Navigation
 
 ```javascript
-// Track page views as user navigates
+// Track page views as user navigates  
 AnalyticsService.trackPageView('/home');
 AnalyticsService.trackPageView('/products');
 AnalyticsService.trackPageView('/product/123', {
