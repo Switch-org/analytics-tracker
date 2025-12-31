@@ -312,5 +312,3 @@ If you encounter issues:
 5. Review the test server logs
 
 For more information, see the main [README.md](./README.md) and [docs/usage-guide.md](./docs/usage-guide.md). 
-
-
