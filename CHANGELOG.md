@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/switch-org/analytics-tracker/compare/v3.0.0...v4.0.0) (2025-12-30)
+
+
+### Features
+
+* optimize essential mode and use ipwho.is connection data ([0f830ea](https://github.com/switch-org/analytics-tracker/commit/0f830eae27009c1cfbfb4e50da4c13a28b497f5e))
+
+
+### BREAKING CHANGES
+
+* Essential mode deviceInfo now has 8 fields, networkInfo removed
+
 # [3.0.0](https://github.com/switch-org/analytics-tracker/compare/v2.2.0...v3.0.0) (2025-12-30)
 
 
