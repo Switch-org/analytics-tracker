@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/Switch-org/analytics-tracker/compare/v4.1.1...v4.1.2) (2025-12-31)
+
+
+### Bug Fixes
+
+* chore(deps-dev): bump the dev-dependencies group with 6 updates ([#4](https://github.com/Switch-org/analytics-tracker/issues/4)) ([32870e2](https://github.com/Switch-org/analytics-tracker/commit/32870e24d95f85d83c0182606e9066947da276c4))
+
 ## [4.1.1](https://github.com/Switch-org/analytics-tracker/compare/v4.1.0...v4.1.1) (2025-12-31)
 
 
