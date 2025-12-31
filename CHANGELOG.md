@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/Switch-org/analytics-tracker/compare/v4.1.0...v4.1.1) (2025-12-31)
+
+
+### Bug Fixes
+
+* chore(deps-dev): bump @typescript-eslint/eslint-plugin ([#6](https://github.com/Switch-org/analytics-tracker/issues/6)) ([2a4e501](https://github.com/Switch-org/analytics-tracker/commit/2a4e501cd574f7182bed6c507a6cdd0b8f7405d8))
+
 # [4.1.0](https://github.com/Switch-org/analytics-tracker/compare/v4.0.0...v4.1.0) (2025-12-31)
 
 
