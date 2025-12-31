@@ -27,6 +27,18 @@ lerna-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+
+# Secrets and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+credentials.json
+config.local.json
+*.secret
+.secrets
 
 # IDE
 .idea/

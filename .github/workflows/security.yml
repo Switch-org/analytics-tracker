@@ -1,0 +1,111 @@
+name: Security
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for known vulnerabilities
+        run: |
+          echo "🔍 Checking for known vulnerabilities..."
+          npm audit --json > audit-results.json || true
+          
+          # Check if there are any vulnerabilities
+          VULN_COUNT=$(node -e "const audit = require('./audit-results.json'); console.log(audit.metadata?.vulnerabilities?.total || 0)")
+          
+          if [ "$VULN_COUNT" -gt 0 ]; then
+            echo "⚠️ Found $VULN_COUNT vulnerabilities"
+            echo "Run 'npm audit fix' to attempt automatic fixes"
+            exit 1
+          else
+            echo "✅ No vulnerabilities found"
+          fi
+
+  check-secrets:
+    name: Check for Exposed Secrets
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for secret scanning
+
+      - name: Check for secrets in code
+        run: |
+          echo "🔍 Scanning for potential secrets..."
+          
+          # Check for common secret patterns (excluding false positives)
+          if grep -r -i -E "(api[_-]?key|secret|token|password|credential|auth[_-]?token|private[_-]?key)\s*[:=]\s*['\"][^'\"]{10,}" \
+             --include="*.ts" \
+             --include="*.tsx" \
+             --include="*.js" \
+             --include="*.jsx" \
+             --exclude-dir=node_modules \
+             --exclude-dir=dist \
+             --exclude="*.test.ts" \
+             --exclude="*.test.js" \
+             .; then
+            echo "⚠️ Potential secrets found in code"
+            echo "Please review and ensure no real secrets are committed"
+            exit 1
+          else
+            echo "✅ No obvious secrets found in code"
+          fi
+
+      - name: Check for .env files
+        run: |
+          if find . -name ".env*" -not -path "./node_modules/*" -not -path "./.git/*" | grep -q .; then
+            echo "⚠️ .env files found in repository"
+            echo "Ensure .env files are in .gitignore"
+            exit 1
+          else
+            echo "✅ No .env files found"
+          fi
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: GPL-2.0, GPL-3.0
+

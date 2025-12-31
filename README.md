@@ -3,6 +3,7 @@
 [![npm version](https://badge.fury.io/js/user-analytics-tracker.svg)](https://www.npmjs.com/package/user-analytics-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/switch-org/analytics-tracker/actions/workflows/ci.yml)
+[![Security](https://github.com/switch-org/analytics-tracker/actions/workflows/security.yml/badge.svg)](https://github.com/switch-org/analytics-tracker/actions/workflows/security.yml)
 
 A comprehensive, lightweight analytics tracking library for React applications. Track device information, network type, user location, attribution data, and more—all with zero runtime dependencies (React as peer dependency).
 

@@ -4,6 +4,9 @@ Welcome to the `user-analytics-tracker` documentation. This directory contains c
 
 ## 📚 Documentation Index
 
+### 🔒 Security
+- **[Security Guide](./SECURITY.md)** - Security best practices for users and contributors
+
 ### For Users
 
 1. **[Usage Guide](./usage-guide.md)** - Complete guide on how to use the package in your applications
