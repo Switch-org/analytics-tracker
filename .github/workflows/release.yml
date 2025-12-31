@@ -1,6 +1,10 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - main
+      - master
   workflow_run:
     workflows: ["CodeQL"]
     types:
@@ -8,6 +12,7 @@ on:
     branches:
       - main
       - master
+
 permissions:
   contents: write
   issues: write
@@ -18,8 +23,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Only run when CodeQL completes successfully on main/master branch
-    if: github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')
+    # Only run on main/master branch
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master'))
 
     steps:
       - name: Checkout code
@@ -27,7 +34,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Configure git for semantic-release
         run: |
