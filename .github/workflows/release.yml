@@ -18,10 +18,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Only run on main/master branch
-    if: |
-      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master'))
+    # Only run when CodeQL completes successfully on main/master branch
+    if: github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')
 
     steps:
       - name: Checkout code
@@ -137,9 +135,34 @@ jobs:
             echo "✅ $NPM_USER will become the owner"
           fi
 
+      - name: Debug semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "🔍 Debugging semantic-release configuration..."
+          echo "GITHUB_TOKEN: ${GITHUB_TOKEN:0:10}..."
+          echo "NPM_TOKEN: ${NPM_TOKEN:0:10}..."
+          echo "Current branch: $(git branch --show-current)"
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Latest tag: $(git describe --tags --abbrev=0 2>/dev/null || echo 'No tags found')"
+          echo ""
+          echo "📋 Recent commits:"
+          git log --oneline -5
+          echo ""
+          echo "📦 Package.json version: $(node -p "require('./package.json').version")"
+          echo "📦 Package name: $(node -p "require('./package.json').name")"
+          echo ""
+          echo "🧪 Running semantic-release dry-run..."
+          npx semantic-release --dry-run || echo "⚠️  Dry-run completed"
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm run release
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Ensure npm token is available to semantic-release
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
+          npm run release
         continue-on-error: false
