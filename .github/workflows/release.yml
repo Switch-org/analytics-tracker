@@ -5,24 +5,52 @@ on:
     branches:
       - main
       - master
+  workflow_run:
+    workflows: ["CodeQL"]
+    types:
+      - completed
+    branches:
+      - main
+      - master
 
 permissions:
   contents: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     # Only run on main/master branch, not on forks
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master'))
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for CodeQL to complete
+        if: github.event_name == 'push'
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.sha }}
+          check-name: 'CodeQL / Analyze (javascript)'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+          allowed-conclusions: success,neutral
+
+      - name: Configure git for semantic-release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Ensure we're using the correct repository URL
+          git remote set-url origin https://github.com/Switch-org/analytics-tracker.git
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
