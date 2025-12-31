@@ -1,6 +1,10 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - main
+      - master
   workflow_run:
     workflows: ["CodeQL"]
     types:
@@ -8,6 +12,7 @@ on:
     branches:
       - main
       - master
+
 permissions:
   contents: write
   issues: write
@@ -37,6 +42,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Ensure we're using the correct repository URL
           git remote set-url origin https://github.com/Switch-org/analytics-tracker.git
+          # Fetch all tags for semantic-release
+          git fetch --tags --force
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -143,20 +150,38 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "🔍 Debugging semantic-release configuration..."
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
           echo "GITHUB_TOKEN: ${GITHUB_TOKEN:0:10}..."
           echo "NPM_TOKEN: ${NPM_TOKEN:0:10}..."
+          echo ""
           echo "Current branch: $(git branch --show-current)"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Latest tag: $(git describe --tags --abbrev=0 2>/dev/null || echo 'No tags found')"
           echo ""
-          echo "📋 Recent commits:"
-          git log --oneline -5
+          echo "📋 Commits since last tag (or last 10 commits):"
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No tags found, showing last 10 commits:"
+            git log --oneline -10 --no-merges
+          else
+            echo "Commits since $LAST_TAG:"
+            git log --oneline ${LAST_TAG}..HEAD --no-merges
+          fi
+          echo ""
+          echo "📋 All commits (including merges) since last tag:"
+          if [ -z "$LAST_TAG" ]; then
+            git log --oneline -10
+          else
+            git log --oneline ${LAST_TAG}..HEAD
+          fi
           echo ""
           echo "📦 Package.json version: $(node -p "require('./package.json').version")"
           echo "📦 Package name: $(node -p "require('./package.json').name")"
           echo ""
           echo "🧪 Running semantic-release dry-run..."
-          npx semantic-release --dry-run || echo "⚠️  Dry-run completed"
+          npx semantic-release --dry-run --debug || echo "⚠️  Dry-run completed"
 
       - name: Release
         env:
