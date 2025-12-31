@@ -311,5 +311,6 @@ If you encounter issues:
 4. Ensure the package is built (`npm run build`)
 5. Review the test server logs
 
-For more information, see the main [README.md](./README.md) and [docs/usage-guide.md](./docs/usage-guide.md).
+For more information, see the main [README.md](./README.md) and [docs/usage-guide.md](./docs/usage-guide.md). 
+
 
