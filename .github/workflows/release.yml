@@ -1,10 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
-      - master
   workflow_run:
     workflows: ["CodeQL"]
     types:
@@ -12,7 +8,6 @@ on:
     branches:
       - main
       - master
-
 permissions:
   contents: write
   issues: write
@@ -23,10 +18,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Only run on main/master branch, not on forks
-    if: |
-      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master'))
+    # Only run when CodeQL completes successfully on main/master branch
+    if: github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')
 
     steps:
       - name: Checkout code
@@ -34,16 +27,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Wait for CodeQL to complete
-        if: github.event_name == 'push'
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.sha }}
-          check-name: 'CodeQL / Analyze (javascript)'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
-          allowed-conclusions: success,neutral
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Configure git for semantic-release
         run: |
