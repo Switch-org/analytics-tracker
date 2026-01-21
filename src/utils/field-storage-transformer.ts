@@ -114,6 +114,12 @@ export function filterFieldsByConfig<T extends Record<string, any>>(
       filtered[key] = data[key];
     }
   });
+  
+  // If no fields were included, return null (not empty object)
+  // This helps distinguish between "no data" and "filtered out all fields"
+  if (Object.keys(filtered).length === 0) {
+    return null;
+  }
 
   // Handle nested objects - only create if at least one child field is included
   if (data.connection && shouldIncludeParent('connection')) {

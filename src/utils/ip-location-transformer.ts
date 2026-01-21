@@ -11,11 +11,18 @@ import { filterFieldsByConfig } from './field-storage-transformer';
  * @returns Transformed IP location data matching backend schema (only includes configured fields)
  */
 export function transformIPLocationForBackend(
-  ipLocation: IPLocation | null,
+  ipLocation: IPLocation | null | any,
   config?: FieldStorageConfig
 ): Record<string, any> | null {
   if (!ipLocation) {
     return null;
+  }
+  
+  // If ipLocation is a simple object with just ip, preserve it for validation
+  // Skip transformation and filtering to ensure ip is always preserved
+  if (ipLocation.ip && Object.keys(ipLocation).length === 1) {
+    // Return object with ip directly (ip is essential field, always preserved)
+    return { ip: ipLocation.ip };
   }
 
   // Transform to match backend expected format (camelCase)

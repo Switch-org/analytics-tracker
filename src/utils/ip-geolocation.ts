@@ -3,43 +3,71 @@ import type { IPLocation } from '../types';
 /**
  * IP Geolocation Service
  * Fetches location data (country, region, city) from user's IP address
- * Uses ipwho.is API (no API key required)
+ * Uses ipwho.is API (supports optional API key for higher rate limits)
  * 
  * Stores all keys dynamically from the API response, including nested objects
  * This ensures we capture all available data and any new fields added by the API
  */
 
 /**
+ * IP Geolocation configuration interface
+ */
+export interface IPGeolocationConfig {
+  apiKey?: string; // Optional API key for ipwho.is (for higher rate limits)
+  baseUrl?: string; // API base URL (default: 'https://ipwho.is')
+  timeout?: number; // Request timeout in ms (default: 5000)
+}
+
+/**
  * Get complete IP location data from ipwho.is API (HIGH PRIORITY)
  * This is the primary method - gets IP, location, connection, and all data in one call
- * No API key required
  * 
+ * @param config - Optional configuration for API key and base URL
  * @returns Promise<IPLocation | null> - Complete IP location data, or null if unavailable
  * 
  * @example
  * ```typescript
+ * // Without API key (free tier)
  * const location = await getCompleteIPLocation();
- * console.log('IP:', location?.ip);
- * console.log('Country:', location?.country);
- * console.log('ISP:', location?.connection?.isp);
+ * 
+ * // With API key (for higher rate limits)
+ * const location = await getCompleteIPLocation({ 
+ *   apiKey: 'your-api-key',
+ *   baseUrl: 'https://ipwho.is'
+ * });
  * ```
  */
-export async function getCompleteIPLocation(): Promise<IPLocation | null> {
+export async function getCompleteIPLocation(config?: IPGeolocationConfig): Promise<IPLocation | null> {
   // Skip if we're in an environment without fetch (SSR)
   if (typeof fetch === 'undefined') {
     return null;
   }
 
+  // Use provided config or defaults
+  const baseUrl = config?.baseUrl || 'https://ipwho.is';
+  const timeout = config?.timeout || 5000;
+  const apiKey = config?.apiKey;
+
   try {
+    // Build URL with optional API key
+    let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    
+    // Add API key as query parameter if provided
+    if (apiKey) {
+      url += `?key=${encodeURIComponent(apiKey)}`;
+    } else {
+      url += '/';
+    }
+
     // Call ipwho.is without IP parameter - it auto-detects user's IP and returns everything
     // This is the HIGH PRIORITY source - gets IP, location, connection, timezone, flag, etc. in one call
-    const response = await fetch('https://ipwho.is/', {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
       },
       // Add timeout to prevent hanging
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(timeout),
     });
 
     if (!response.ok) {
@@ -107,6 +135,7 @@ export async function getCompleteIPLocation(): Promise<IPLocation | null> {
  * This is kept for backward compatibility and as a fallback
  * Prefer getCompleteIPLocation() which gets everything in one call
  * 
+ * @param config - Optional configuration for API key and base URL
  * @returns Promise<string | null> - The public IP address, or null if unavailable
  * 
  * @example
@@ -115,21 +144,33 @@ export async function getCompleteIPLocation(): Promise<IPLocation | null> {
  * console.log('Your IP:', ip); // e.g., "203.0.113.42"
  * ```
  */
-export async function getPublicIP(): Promise<string | null> {
+export async function getPublicIP(config?: IPGeolocationConfig): Promise<string | null> {
   // Try to get complete location first (includes IP)
-  const completeLocation = await getCompleteIPLocation();
+  const completeLocation = await getCompleteIPLocation(config);
   if (completeLocation?.ip) {
     return completeLocation.ip;
   }
 
   // Fallback: try direct IP fetch (less efficient, lower priority)
   try {
-    const response = await fetch('https://ipwho.is/', {
+    const baseUrl = config?.baseUrl || 'https://ipwho.is';
+    const timeout = config?.timeout || 5000;
+    const apiKey = config?.apiKey;
+
+    // Build URL with optional API key
+    let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    if (apiKey) {
+      url += `?key=${encodeURIComponent(apiKey)}`;
+    } else {
+      url += '/';
+    }
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(timeout),
     });
 
     if (!response.ok) {
@@ -152,14 +193,28 @@ export async function getPublicIP(): Promise<string | null> {
 
 /**
  * Get location from IP address using ipwho.is API (HIGH PRIORITY)
- * Free tier: No API key required
  * 
  * Stores all keys dynamically from the API response, including nested objects
  * This ensures we capture all available data and any new fields added by the API
  * 
+ * @param ip - IP address to geolocate
+ * @param config - Optional configuration for API key and base URL
+ * @returns Promise<IPLocation | null> - IP location data, or null if unavailable
+ * 
+ * @example
+ * ```typescript
+ * // Without API key
+ * const location = await getIPLocation('203.0.113.42');
+ * 
+ * // With API key
+ * const location = await getIPLocation('203.0.113.42', { 
+ *   apiKey: 'your-api-key' 
+ * });
+ * ```
+ * 
  * Note: If you don't have an IP yet, use getCompleteIPLocation() which gets everything in one call
  */
-export async function getIPLocation(ip: string): Promise<IPLocation | null> {
+export async function getIPLocation(ip: string, config?: IPGeolocationConfig): Promise<IPLocation | null> {
   // Skip localhost/private IPs (these can't be geolocated)
   if (
     !ip ||
@@ -178,18 +233,29 @@ export async function getIPLocation(ip: string): Promise<IPLocation | null> {
   }
 
   try {
-    // Using ipwho.is API (no API key required)
-    const response = await fetch(
-      `https://ipwho.is/${ip}`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(5000),
-      }
-    );
+    // Use provided config or defaults
+    const baseUrl = config?.baseUrl || 'https://ipwho.is';
+    const timeout = config?.timeout || 5000;
+    const apiKey = config?.apiKey;
+
+    // Build URL with IP and optional API key
+    let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    url += `/${ip}`;
+    
+    // Add API key as query parameter if provided
+    if (apiKey) {
+      url += `?key=${encodeURIComponent(apiKey)}`;
+    }
+
+    // Using ipwho.is API
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(timeout),
+    });
 
     if (!response.ok) {
       console.warn(`[IP Geolocation] Failed to fetch location for IP ${ip}: ${response.status}`);

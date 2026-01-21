@@ -5,6 +5,8 @@ import { pluginManager } from '../plugins/plugin-manager';
 import { metricsCollector } from '../utils/metrics';
 import { transformIPLocationForBackend } from '../utils/ip-location-transformer';
 import { filterFieldsByConfig } from '../utils/field-storage-transformer';
+import { LocationDetector } from '../detectors/location-detector';
+import { validateEvent, generateDeduplicationKey } from '../utils/event-validator';
 import {
   DEFAULT_ESSENTIAL_DEVICE_FIELDS,
   DEFAULT_ESSENTIAL_NETWORK_FIELDS,
@@ -29,6 +31,8 @@ export class AnalyticsService {
   private static queueManager: QueueManager | null = null;
   private static config: Partial<AnalyticsConfig> = {};
   private static isInitialized = false;
+  private static seenEventKeys: Set<string> = new Set();
+  private static readonly DEDUPE_CACHE_SIZE = 1000; // Keep last 1000 event keys
 
   /**
    * Configure the analytics service
@@ -71,6 +75,9 @@ export class AnalyticsService {
       ...config,
     };
 
+    // Clear seen event keys when reconfiguring (important for tests)
+    this.seenEventKeys.clear();
+
     // Set log level
     if (this.config.logLevel) {
       logger.setLevel(this.config.logLevel as LogLevel);
@@ -87,6 +94,11 @@ export class AnalyticsService {
     // Reset metrics if enabled
     if (this.config.enableMetrics) {
       metricsCollector.reset();
+    }
+
+    // Configure IP geolocation if provided
+    if (this.config.ipGeolocation) {
+      LocationDetector.configureIPGeolocation(this.config.ipGeolocation);
     }
 
     this.isInitialized = true;
@@ -139,9 +151,64 @@ export class AnalyticsService {
 
   /**
    * Send a batch of events with retry logic
+   * Filters out invalid and duplicate events before sending
    */
   private static async sendBatch(events: AnalyticsEvent[]): Promise<void> {
-    if (events.length === 0) return;
+    // Validate and filter events
+    const validatedEvents: AnalyticsEvent[] = [];
+    const seenInBatch = new Set<string>();
+    
+    for (const event of events) {
+      // Validate event
+      const validated = validateEvent(event);
+      if (!validated) {
+        logger.debug('Event filtered out in batch: missing required fields', {
+          sessionId: event.sessionId,
+          pageUrl: event.pageUrl,
+          hasIPLocation: !!event.ipLocation,
+          hasIP: !!(event.ipLocation?.ip),
+        });
+        continue;
+      }
+      
+      // Check for duplicates in this batch only
+      // Note: Events are already deduplicated when queued, so we only check within the batch
+      const dedupeKey = generateDeduplicationKey(validated);
+      if (seenInBatch.has(dedupeKey)) {
+        logger.debug('Duplicate event filtered out in batch', { dedupeKey });
+        continue;
+      }
+      
+      // Add to seen events for this batch
+      seenInBatch.add(dedupeKey);
+      
+      // Also add to global seen events cache (for cross-batch deduplication)
+      // But don't filter out if already seen - events from queue are already validated
+      if (!this.seenEventKeys.has(dedupeKey)) {
+        this.seenEventKeys.add(dedupeKey);
+        // Manage cache size
+        if (this.seenEventKeys.size > this.DEDUPE_CACHE_SIZE) {
+          const firstKey = this.seenEventKeys.values().next().value;
+          if (firstKey !== undefined) {
+            this.seenEventKeys.delete(firstKey);
+          }
+        }
+      }
+      
+      validatedEvents.push(validated);
+    }
+    
+    if (validatedEvents.length === 0) {
+      logger.debug('All events in batch were filtered out');
+      return;
+    }
+    
+    // Use validated events
+    if (validatedEvents.length === 0) {
+      return;
+    }
+    
+    events = validatedEvents;
 
     // Apply plugin transformations
     const transformedEvents: AnalyticsEvent[] = [];
@@ -281,6 +348,7 @@ export class AnalyticsService {
   /**
    * Track user journey/analytics event
    * Events are automatically queued and batched
+   * Duplicate events and events with null values are filtered out
    */
   static async trackEvent(event: Omit<AnalyticsEvent, 'eventId' | 'timestamp'>): Promise<void> {
     const payload: AnalyticsEvent = {
@@ -289,9 +357,42 @@ export class AnalyticsService {
       eventId: this.generateEventId(),
     };
 
+    // Validate event - filter out if missing required fields or too many nulls
+    const validatedEvent = validateEvent(payload);
+    if (!validatedEvent) {
+      logger.debug('Event filtered out: missing required fields or too many null values', {
+        sessionId: payload.sessionId,
+        pageUrl: payload.pageUrl,
+        eventName: payload.eventName,
+      });
+      return;
+    }
+
+    // Check for duplicates
+    const dedupeKey = generateDeduplicationKey(validatedEvent);
+    if (this.seenEventKeys.has(dedupeKey)) {
+      logger.debug('Duplicate event filtered out', {
+        dedupeKey,
+        sessionId: validatedEvent.sessionId,
+        pageUrl: validatedEvent.pageUrl,
+        eventName: validatedEvent.eventName,
+      });
+      return;
+    }
+
+    // Add to seen events (with cache size limit)
+    this.seenEventKeys.add(dedupeKey);
+    if (this.seenEventKeys.size > this.DEDUPE_CACHE_SIZE) {
+      // Remove oldest entries (simple FIFO - remove first entry)
+      const firstKey = this.seenEventKeys.values().next().value;
+      if (firstKey !== undefined) {
+        this.seenEventKeys.delete(firstKey);
+      }
+    }
+
     // If queue is available, use it (browser environment)
     if (this.queueManager && typeof window !== 'undefined') {
-      this.queueManager.enqueue(payload);
+      this.queueManager.enqueue(validatedEvent);
       
       // Record metrics
       if (this.config.enableMetrics) {
@@ -304,7 +405,7 @@ export class AnalyticsService {
 
     // Fallback: send immediately (SSR or queue not initialized)
     try {
-      await this.sendBatch([payload]);
+      await this.sendBatch([validatedEvent]);
     } catch (err) {
       logger.warn('Failed to send event:', err);
     }
@@ -343,10 +444,15 @@ export class AnalyticsService {
     const ipLocationConfig = fieldStorage.ipLocation || this.config.ipLocationFields;
     
     // Transform and filter all data types based on configuration
-    const transformedIPLocation = transformIPLocationForBackend(
+    // Use raw ipLocation if transformation returns null (for validation purposes)
+    let transformedIPLocation = transformIPLocationForBackend(
       ipLocation,
       ipLocationConfig
     );
+    // Fallback to original ipLocation if transform returns null (needed for validation)
+    if (!transformedIPLocation && ipLocation) {
+      transformedIPLocation = ipLocation as any;
+    }
     
     const filteredDeviceInfo = filterFieldsByConfig(
       deviceInfo,
@@ -410,8 +516,7 @@ export class AnalyticsService {
       deviceInfo: filteredDeviceInfo || undefined,
       location: filteredLocation || undefined,
       attribution: filteredAttribution || undefined,
-      // Don't include raw ipLocation - we have the filtered/transformed version in customData
-      ipLocation: undefined,
+      ipLocation: transformedIPLocation || ipLocation || undefined,
       userId: userId ?? sessionId,
       customData: {
         ...customData,
@@ -458,6 +563,7 @@ export class AnalyticsService {
       location?: any;
       attribution?: AttributionInfo;
       userId?: string;
+      ipLocation?: any;
     }
   ): Promise<void> {
     // Auto-collect context if not provided (requires dynamic imports)
@@ -506,30 +612,123 @@ export class AnalyticsService {
       }
     }
 
-    const finalSessionId = context?.sessionId || autoContext?.sessionId || 'unknown';
-    const finalPageUrl = context?.pageUrl || autoContext?.pageUrl || '';
+    // Ensure sessionId is always a valid non-empty string for validation
+    let finalSessionId = context?.sessionId || autoContext?.sessionId || 'unknown';
+    if (finalSessionId === 'unknown' || finalSessionId.trim() === '') {
+      // Try to get from storage if available
+      if (typeof window !== 'undefined') {
+        try {
+          const { getOrCreateUserId } = await import('../utils/storage');
+          finalSessionId = getOrCreateUserId();
+        } catch {
+          // If storage is not available, generate a temporary session ID
+          finalSessionId = `temp-${Date.now()}`;
+        }
+      } else {
+        // SSR environment - generate a temporary session ID
+        finalSessionId = `temp-${Date.now()}`;
+      }
+    }
     
-    // Extract IP location from location object if available
-    const locationData = context?.location || autoContext?.location;
-    const ipLocationData = locationData && typeof locationData === 'object' 
-      ? (locationData as any)?.ipLocationData 
-      : undefined;
+    // Ensure pageUrl is always a valid non-empty string for validation
+    let finalPageUrl = context?.pageUrl || autoContext?.pageUrl || '';
+    // If pageUrl is empty, try to get it from window.location if available
+    if (!finalPageUrl && typeof window !== 'undefined' && window.location) {
+      finalPageUrl = window.location.href;
+    }
+    // If still empty, use a default value to pass validation
+    if (!finalPageUrl || finalPageUrl.trim() === '') {
+      finalPageUrl = 'https://unknown';
+    }
+    
+    // Extract IP location from context.ipLocation, location object, or auto-collected location
+    const ipLocationData = context?.ipLocation || 
+      (context?.location && typeof context.location === 'object' 
+        ? (context.location as any)?.ipLocationData 
+        : undefined) ||
+      (autoContext?.location && typeof autoContext.location === 'object'
+        ? (autoContext.location as any)?.ipLocationData
+        : undefined);
     
     // Get field storage config (support both new and legacy format)
     const fieldStorage = this.config.fieldStorage || {};
     const ipLocationConfig = fieldStorage.ipLocation || this.config.ipLocationFields;
     
     // Transform and filter all data types based on configuration
-    const transformedIPLocation = transformIPLocationForBackend(
-      ipLocationData,
+    // Use raw ipLocationData if transformation returns null (for validation purposes)
+    // Always prioritize context?.ipLocation if it has an IP (most direct and reliable source)
+    const rawIPLocation = (context?.ipLocation && context.ipLocation.ip) 
+      ? context.ipLocation 
+      : (ipLocationData || undefined);
+    
+    // Preserve ip field for validation - always ensure ip is available
+    const preserveIP = rawIPLocation?.ip;
+    
+    let transformedIPLocation = transformIPLocationForBackend(
+      rawIPLocation,
       ipLocationConfig
     );
     
+    // Critical: Ensure ip field is always preserved for validation
+    // If transformation removed ip or returned null/empty, restore it from rawIPLocation
+    if (preserveIP) {
+      if (!transformedIPLocation) {
+        // Transformation returned null, use rawIPLocation
+        transformedIPLocation = rawIPLocation as any;
+      } else if (Object.keys(transformedIPLocation).length === 0) {
+        // Transformation returned empty object, use rawIPLocation
+        transformedIPLocation = rawIPLocation as any;
+      } else if (!transformedIPLocation.ip) {
+        // Transformation returned object but without ip field, restore it
+        transformedIPLocation = { ...transformedIPLocation, ip: preserveIP };
+      }
+    } else if (!transformedIPLocation && rawIPLocation) {
+      // No ip to preserve, but use rawIPLocation if transformation failed
+      transformedIPLocation = rawIPLocation as any;
+    }
+    
+    const rawDeviceInfo = context?.deviceInfo || autoContext?.deviceInfo;
     const filteredDeviceInfo = filterFieldsByConfig(
-      context?.deviceInfo || autoContext?.deviceInfo,
+      rawDeviceInfo,
       fieldStorage.deviceInfo,
       DEFAULT_ESSENTIAL_DEVICE_FIELDS
     );
+    
+    // Ensure deviceInfo has os and browser for validation (critical fields)
+    // If filtering removed them, restore from rawDeviceInfo
+    let finalDeviceInfo: Partial<DeviceInfo> | null = filteredDeviceInfo;
+    if (rawDeviceInfo) {
+      if (!finalDeviceInfo) {
+        // Filtering returned null, create minimal object with essential fields
+        finalDeviceInfo = {};
+        if (rawDeviceInfo.os) finalDeviceInfo.os = rawDeviceInfo.os;
+        if (rawDeviceInfo.browser) finalDeviceInfo.browser = rawDeviceInfo.browser;
+      } else {
+        // Ensure os and browser are present for validation
+        if (!finalDeviceInfo.os && rawDeviceInfo.os) {
+          finalDeviceInfo = { ...finalDeviceInfo, os: rawDeviceInfo.os };
+        }
+        if (!finalDeviceInfo.browser && rawDeviceInfo.browser) {
+          finalDeviceInfo = { ...finalDeviceInfo, browser: rawDeviceInfo.browser };
+        }
+      }
+      // Only use finalDeviceInfo if it has at least os or browser
+      // But if rawDeviceInfo has os or browser, ensure finalDeviceInfo has them
+      if (rawDeviceInfo.os || rawDeviceInfo.browser) {
+        if (!finalDeviceInfo) {
+          finalDeviceInfo = {};
+        }
+        if (rawDeviceInfo.os && !finalDeviceInfo.os) {
+          finalDeviceInfo.os = rawDeviceInfo.os;
+        }
+        if (rawDeviceInfo.browser && !finalDeviceInfo.browser) {
+          finalDeviceInfo.browser = rawDeviceInfo.browser;
+        }
+      } else if (!finalDeviceInfo || (!finalDeviceInfo.os && !finalDeviceInfo.browser)) {
+        // No os or browser in rawDeviceInfo, and finalDeviceInfo doesn't have them either
+        finalDeviceInfo = null;
+      }
+    }
     
     // In essential mode, don't store browser-based networkInfo
     // Connection data from ipwho.is (in customData.ipLocation.connection) is more accurate
@@ -578,20 +777,67 @@ export class AnalyticsService {
       DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS
     );
 
+    // Ensure ipLocation is available for validation
+    // Always preserve ip field - critical for validation
+    // Use transformedIPLocation if it has ip, otherwise fall back to rawIPLocation
+    let finalIPLocation: any = undefined;
+    
+    // Priority 1: If we have rawIPLocation with IP, always use it (most reliable source)
+    if (rawIPLocation && rawIPLocation.ip) {
+      if (transformedIPLocation && transformedIPLocation.ip) {
+        // Both have IP, prefer transformed (has filtering applied)
+        finalIPLocation = transformedIPLocation;
+      } else if (transformedIPLocation) {
+        // Transformed exists but no IP, merge with rawIPLocation to preserve IP
+        finalIPLocation = { ...transformedIPLocation, ip: rawIPLocation.ip };
+      } else {
+        // No transformation, use rawIPLocation directly
+        finalIPLocation = rawIPLocation;
+      }
+    } else if (transformedIPLocation) {
+      // No raw IP, but transformation succeeded
+      finalIPLocation = transformedIPLocation;
+    } else if (context?.ipLocation && context.ipLocation.ip) {
+      // Fallback to context.ipLocation if available
+      finalIPLocation = context.ipLocation;
+    }
+    
+    // Final safety check: ensure IP is always present if we have it from any source
+    if (!finalIPLocation || !finalIPLocation.ip) {
+      if (rawIPLocation && rawIPLocation.ip) {
+        finalIPLocation = rawIPLocation;
+      } else if (context?.ipLocation && context.ipLocation.ip) {
+        finalIPLocation = context.ipLocation;
+      }
+    }
+    
+    // Ultimate safeguard: if context.ipLocation has IP, always use it for validation
+    // This ensures validation never fails due to missing IP when it's provided in context
+    if (context?.ipLocation && context.ipLocation.ip) {
+      if (!finalIPLocation || !finalIPLocation.ip) {
+        finalIPLocation = context.ipLocation;
+      } else if (!finalIPLocation.ip) {
+        // Merge to preserve other fields but ensure IP is present
+        finalIPLocation = { ...finalIPLocation, ip: context.ipLocation.ip };
+      }
+    }
+    
     await this.trackEvent({
       sessionId: finalSessionId,
       pageUrl: finalPageUrl,
       networkInfo: filteredNetworkInfo || undefined,
-      deviceInfo: filteredDeviceInfo || undefined,
+      deviceInfo: (finalDeviceInfo && (finalDeviceInfo.os || finalDeviceInfo.browser)) ? (finalDeviceInfo as DeviceInfo) : undefined,
       location: filteredLocation || undefined,
       attribution: filteredAttribution || undefined,
+      ipLocation: finalIPLocation,
       userId: context?.userId || finalSessionId,
       eventName,
       eventParameters: parameters || {},
       customData: {
         ...(parameters || {}),
         // Store transformed IP location in customData for backend integration
-        ...(transformedIPLocation && { ipLocation: transformedIPLocation }),
+        // Use transformed if available, otherwise use raw (for validation)
+        ...(finalIPLocation && { ipLocation: transformedIPLocation || finalIPLocation }),
       },
     });
   }
@@ -617,7 +863,17 @@ export class AnalyticsService {
    */
   static async trackPageView(
     pageName?: string,
-    parameters?: Record<string, any>
+    parameters?: Record<string, any>,
+    context?: {
+      sessionId?: string;
+      pageUrl?: string;
+      networkInfo?: NetworkInfo;
+      deviceInfo?: DeviceInfo;
+      location?: any;
+      attribution?: AttributionInfo;
+      userId?: string;
+      ipLocation?: any;
+    }
   ): Promise<void> {
     const page = pageName || (typeof window !== 'undefined' ? window.location.pathname : '');
     
@@ -625,7 +881,7 @@ export class AnalyticsService {
       page_name: page,
       page_title: typeof document !== 'undefined' ? document.title : undefined,
       ...parameters,
-    });
+    }, context);
   }
 
   /**

@@ -67,7 +67,10 @@ export {
 } from './utils/location-consent';
 
 export { getCompleteIPLocation, getIPLocation, getIPFromRequest, getPublicIP } from './utils/ip-geolocation';
+export type { IPGeolocationConfig } from './utils/ip-geolocation';
 export { transformIPLocationForBackend } from './utils/ip-location-transformer';
+export { validateEvent, extractRequiredFields, validateRequiredFields, generateDeduplicationKey } from './utils/event-validator';
+export type { RequiredEventFields } from './utils/event-validator';
 export { filterFieldsByConfig } from './utils/field-storage-transformer';
 export type { FieldStorageConfig as FieldStorageConfigType } from './utils/field-storage-transformer';
 

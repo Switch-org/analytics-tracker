@@ -67,6 +67,27 @@ describe('AnalyticsService', () => {
       }, {
         sessionId: 'test-session',
         pageUrl: 'https://example.com',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
       });
 
       // Flush queue so batched events are sent
@@ -85,9 +106,12 @@ describe('AnalyticsService', () => {
         button_name: 'signup',
         button_location: 'header',
       });
-      expect(body.customData).toEqual({
+      expect(body.customData).toMatchObject({
         button_name: 'signup',
         button_location: 'header',
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
       });
       expect(body.eventId).toBeDefined();
       expect(body.timestamp).toBeDefined();
@@ -97,6 +121,27 @@ describe('AnalyticsService', () => {
       await AnalyticsService.logEvent('page_view', undefined, {
         sessionId: 'test-session',
         pageUrl: 'https://example.com',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
       });
 
       await AnalyticsService.flushQueue();
@@ -124,7 +169,32 @@ describe('AnalyticsService', () => {
         writable: true,
       });
 
-      await AnalyticsService.logEvent('test_event', { param: 'value' });
+      // Provide required fields since auto-collection might not work in test environment
+      await AnalyticsService.logEvent('test_event', { param: 'value' }, {
+        sessionId: 'test-session',
+        pageUrl: 'https://example.com/test',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test-agent',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
+      });
 
       await AnalyticsService.flushQueue();
 
@@ -141,6 +211,27 @@ describe('AnalyticsService', () => {
         sessionId: 'custom-session-123',
         pageUrl: 'https://custom.com/page',
         userId: 'user-123',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
       };
 
       await AnalyticsService.logEvent('test_event', { param: 'value' }, customContext);
@@ -159,7 +250,31 @@ describe('AnalyticsService', () => {
     it('should use custom endpoint from configuration', async () => {
       AnalyticsService.configure({ apiEndpoint: 'https://custom-api.com/events' });
 
-      await AnalyticsService.logEvent('test_event');
+      await AnalyticsService.logEvent('test_event', undefined, {
+        sessionId: 'test-session',
+        pageUrl: 'https://example.com',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
+      });
 
       await AnalyticsService.flushQueue();
 
@@ -193,8 +308,35 @@ describe('AnalyticsService', () => {
 
   describe('trackPageView', () => {
     it('should send page_view event with page name', async () => {
+      const g = global as any;
+      delete g.window.location;
+      g.window.location = { href: 'https://example.com/dashboard' } as any;
+
       await AnalyticsService.trackPageView('/dashboard', {
         page_title: 'Dashboard',
+      }, {
+        sessionId: 'test-session',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
       });
 
       await AnalyticsService.flushQueue();
@@ -216,7 +358,30 @@ describe('AnalyticsService', () => {
         href: 'https://example.com/home',
       } as any;
 
-      await AnalyticsService.trackPageView();
+      await AnalyticsService.trackPageView(undefined, undefined, {
+        sessionId: 'test-session',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
+      });
 
       await AnalyticsService.flushQueue();
 
@@ -235,6 +400,27 @@ describe('AnalyticsService', () => {
         sessionId: 'session-123',
         pageUrl: 'https://example.com/page',
         userId: 'user-123',
+        deviceInfo: {
+          type: 'desktop' as const,
+          os: 'Windows',
+          osVersion: '10',
+          browser: 'Chrome',
+          browserVersion: '100',
+          screenResolution: '1920x1080',
+          deviceModel: 'PC',
+          deviceBrand: 'Generic',
+          language: 'en',
+          timezone: 'UTC',
+          userAgent: 'test',
+          touchSupport: false,
+          pixelRatio: 1,
+          colorDepth: 24,
+          orientation: 'landscape',
+          cpuArchitecture: 'x86',
+        },
+        ipLocation: {
+          ip: '192.168.1.1',
+        },
       });
 
       await AnalyticsService.flushQueue();

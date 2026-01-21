@@ -1,6 +1,6 @@
-import type { LocationInfo } from '../types';
+import type { LocationInfo, AnalyticsConfig } from '../types';
 import { hasLocationConsent, setLocationConsentGranted } from '../utils/location-consent';
-import { getCompleteIPLocation, getIPLocation, getPublicIP } from '../utils/ip-geolocation';
+import { getCompleteIPLocation, getIPLocation, getPublicIP, type IPGeolocationConfig } from '../utils/ip-geolocation';
 
 /**
  * Location Detector
@@ -13,6 +13,25 @@ export class LocationDetector {
   private static locationConsentLoggedRef: { current: boolean } = { current: false };
   private static ipLocationFetchingRef: { current: boolean } = { current: false };
   private static lastIPLocationRef: { current: LocationInfo | null } = { current: null };
+  private static ipGeolocationConfig: IPGeolocationConfig | null = null;
+
+  /**
+   * Configure IP geolocation settings (API key, base URL, timeout)
+   * 
+   * @param config - IP geolocation configuration
+   * 
+   * @example
+   * ```typescript
+   * LocationDetector.configureIPGeolocation({
+   *   apiKey: 'your-ipwho-is-api-key',
+   *   baseUrl: 'https://ipwho.is',
+   *   timeout: 5000
+   * });
+   * ```
+   */
+  static configureIPGeolocation(config: IPGeolocationConfig | null): void {
+    this.ipGeolocationConfig = config;
+  }
 
   /**
    * Detect location using IP-based API only (no GPS, no permission needed)
@@ -343,16 +362,17 @@ export class LocationDetector {
       // HIGH PRIORITY: Get complete IP location data from ipwho.is in one call
       // This gets IP, location, connection, timezone, flag, and all other data at once
       // More efficient than making separate calls
-      let ipLocation = await getCompleteIPLocation();
+      // Use configured API key and settings if available
+      let ipLocation = await getCompleteIPLocation(this.ipGeolocationConfig || undefined);
       
       // If complete location fetch failed, try fallback: get IP first, then location
       if (!ipLocation) {
         console.log('[Location] Primary ipwho.is call failed, trying fallback...');
-        const publicIP = await getPublicIP();
+        const publicIP = await getPublicIP(this.ipGeolocationConfig || undefined);
         
         if (publicIP) {
           // Fallback: Get location from IP using ipwho.is API
-          ipLocation = await getIPLocation(publicIP);
+          ipLocation = await getIPLocation(publicIP, this.ipGeolocationConfig || undefined);
         }
       }
 

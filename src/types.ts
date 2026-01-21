@@ -147,6 +147,12 @@ export interface AnalyticsConfig {
   logLevel?: LogLevel; // Logging verbosity (default: 'warn')
   // Metrics configuration
   enableMetrics?: boolean; // Enable metrics collection (default: false)
+  // IP Geolocation API configuration (ipwho.is)
+  ipGeolocation?: {
+    apiKey?: string; // Your ipwho.is API key (optional - free tier works without key)
+    baseUrl?: string; // Custom API base URL (default: 'https://ipwho.is')
+    timeout?: number; // Request timeout in ms (default: 5000)
+  };
   // Field storage configuration - control which fields are stored for each data type
   fieldStorage?: {
     // IP Location storage configuration
@@ -193,16 +199,11 @@ export type IPLocationFieldConfig = FieldStorageConfig;
 export const DEFAULT_ESSENTIAL_IP_FIELDS = [
   // Core identification
   'ip',
-  'country',
   'countryCode',
-  'region',
   'city',
   // Geographic coordinates (stored here, not duplicated in location)
   'lat',
   'lon',
-  // Additional geographic info
-  'continent',
-  'continentCode',
   // Network info
   'type',
   'isEu',
@@ -212,28 +213,15 @@ export const DEFAULT_ESSENTIAL_IP_FIELDS = [
   'connection.org',
   'connection.isp',
   'connection.domain',
-  // Timezone (stored here, not duplicated in location)
-  'timezone',
-  'timezoneDetails',
-  'timezoneDetails.id',
-  'timezoneDetails.abbr',
-  'timezoneDetails.utc',
-  // Flag (only emoji in essential mode)
-  'flag.emoji',
 ] as const;
 
 /**
  * Default essential fields for Device Info storage
+ * In essential mode, only OS and browser are stored
  */
 export const DEFAULT_ESSENTIAL_DEVICE_FIELDS = [
-  'type',
   'os',
-  'osVersion',
   'browser',
-  'browserVersion',
-  'deviceModel',
-  'deviceBrand',
-  'userAgent',
 ] as const;
 
 /**
@@ -269,17 +257,6 @@ export const DEFAULT_ESSENTIAL_LOCATION_FIELDS = [
 export const DEFAULT_ESSENTIAL_ATTRIBUTION_FIELDS = [
   'landingUrl',
   'path',
-  'hostname',
-  'referrerUrl',
-  'referrerDomain',
-  'navigationType',
-  'isReload',
-  'isBackForward',
-  'utm_source',
-  'utm_medium',
-  'utm_campaign',
-  'utm_term',
-  'utm_content',
 ] as const;
 
 export interface AnalyticsEvent {
