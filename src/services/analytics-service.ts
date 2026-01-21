@@ -424,8 +424,8 @@ export class AnalyticsService {
     ipLocation,
     userId,
     customData,
-    pageVisits = 1,
-    interactions = 0,
+    pageVisits: _pageVisits = 1,
+    interactions: _interactions = 0,
   }: {
     sessionId: string;
     pageUrl: string;
@@ -595,7 +595,7 @@ export class AnalyticsService {
             location: await LocationDetector.detect().catch(() => undefined),
             attribution: AttributionDetector.detect(),
           };
-        } catch (error) {
+        } catch {
           // If auto-collection fails, use minimal context
           const { getOrCreateUserId } = await import('../utils/storage');
           autoContext = {
@@ -816,9 +816,6 @@ export class AnalyticsService {
     if (context?.ipLocation && context.ipLocation.ip) {
       if (!finalIPLocation || !finalIPLocation.ip) {
         finalIPLocation = context.ipLocation;
-      } else if (!finalIPLocation.ip) {
-        // Merge to preserve other fields but ensure IP is present
-        finalIPLocation = { ...finalIPLocation, ip: context.ipLocation.ip };
       }
     }
     

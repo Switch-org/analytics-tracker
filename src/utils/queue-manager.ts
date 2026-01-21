@@ -201,7 +201,7 @@ export class QueueManager {
             });
             navigator.sendBeacon(this.getEndpointFromCallback(), blob);
             this.saveToStorage();
-          } catch (error) {
+          } catch {
             // Fallback: put events back in queue
             this.queue.unshift(
               ...events.map((e) => ({

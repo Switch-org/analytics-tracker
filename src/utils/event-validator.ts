@@ -71,7 +71,7 @@ export function extractRequiredFields(event: AnalyticsEvent): RequiredEventField
       page = new URL(pageUrl).pathname;
     } catch {
       // If URL parsing fails, try to extract pathname manually
-      const match = pageUrl.match(/^https?:\/\/[^\/]+(\/.*)?$/);
+      const match = pageUrl.match(/^https?:\/\/[^/]+(\/.*)?$/);
       page = match ? (match[1] || '/') : null;
     }
   }

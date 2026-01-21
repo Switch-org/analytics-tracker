@@ -1,4 +1,4 @@
-import type { LocationInfo, AnalyticsConfig } from '../types';
+import type { LocationInfo } from '../types';
 import { hasLocationConsent, setLocationConsentGranted } from '../utils/location-consent';
 import { getCompleteIPLocation, getIPLocation, getPublicIP, type IPGeolocationConfig } from '../utils/ip-geolocation';
 

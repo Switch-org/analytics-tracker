@@ -346,7 +346,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
   // Session management
   useEffect(() => {
     if (config?.sessionTimeout) {
-      const session = getOrCreateSession(config.sessionTimeout);
+      getOrCreateSession(config.sessionTimeout);
       // Update session activity on user interactions
       const activityInterval = setInterval(() => {
         updateSessionActivity();

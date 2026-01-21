@@ -57,7 +57,7 @@ export class NetworkDetector {
       const downlink = c.downlink || 0;
       const rtt = c.rtt || 0;
       const saveData = c.saveData || false;
-      const effectiveType = c.effectiveType?.toLowerCase() || '';
+      // const effectiveType = c.effectiveType?.toLowerCase() || ''; // Reserved for future use
 
       const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       const isDesktop = !isMobileDevice;
