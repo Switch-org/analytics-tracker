@@ -118,7 +118,7 @@ export function getOrCreateSession(timeout: number = DEFAULT_SESSION_TIMEOUT): S
   }
 
   // Create new session
-  const sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  const sessionId = `session-${Date.now()}-${getSecureRandomString(16)}`;
   const newSession: SessionInfo = {
     sessionId,
     startTime: now,
@@ -164,3 +164,23 @@ export function clearSession(): void {
   }
 }
 
+/**
+ * Generate a cryptographically secure random string.
+ * Length is the number of bytes, which are hex-encoded (2 chars per byte).
+ */
+function getSecureRandomString(length: number): string {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const bytes = new Uint8Array(length);
+    window.crypto.getRandomValues(bytes);
+    let result = '';
+    for (let i = 0; i < bytes.length; i++) {
+      const hex = bytes[i].toString(16).padStart(2, '0');
+      result += hex;
+    }
+    return result;
+  }
+
+  // Fallback to a less secure method only if crypto is unavailable.
+  // This should be rare in modern browsers.
+  return Math.random().toString(36).substring(2, 2 + length);
+}
