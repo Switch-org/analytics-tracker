@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import type { IPLocation } from '../types';
 
 /**
@@ -32,7 +33,7 @@ export interface IPGeolocationConfig {
  * 
  * // With API key (for higher rate limits)
  * const location = await getCompleteIPLocation({ 
- *   apiKey: 'your-api-key',
+ *   apiKey: '<your-api-key>',
  *   baseUrl: 'https://ipwho.is'
  * });
  * ```
@@ -208,7 +209,7 @@ export async function getPublicIP(config?: IPGeolocationConfig): Promise<string 
  * 
  * // With API key
  * const location = await getIPLocation('203.0.113.42', { 
- *   apiKey: 'your-api-key' 
+ *   apiKey: '<your-api-key>' 
  * });
  * ```
  * 

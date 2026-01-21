@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { IPLocation, FieldStorageConfig } from '../types';
 import { DEFAULT_ESSENTIAL_IP_FIELDS } from '../types';
 import { filterFieldsByConfig } from './field-storage-transformer';

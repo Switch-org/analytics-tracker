@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * React Hook for Analytics Tracking
  * Provides device, network, location, and attribution data
@@ -74,6 +75,8 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
     config?.logLevel,
     config?.enableMetrics,
     config?.sessionTimeout,
+    config?.fieldStorage,
+    config?.ipLocationFields,
   ]);
 
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);

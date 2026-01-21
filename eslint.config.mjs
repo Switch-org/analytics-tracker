@@ -68,4 +68,12 @@ export default [
       ...prettierConfig.rules,
     },
   },
+  // Test files - more lenient rules
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/tests/**/*.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off', // Tests often need 'any' for mocking
+      'no-console': 'off', // Tests may use console for debugging
+    },
+  },
 ];

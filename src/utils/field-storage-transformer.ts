@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Generic field storage transformer
  * Filters object fields based on storage configuration

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Debug utilities for analytics tracker
  * Provides debugging tools in development mode

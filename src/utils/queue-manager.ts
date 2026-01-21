@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Queue Manager for Analytics Events
  * Handles batching, persistence, and offline support

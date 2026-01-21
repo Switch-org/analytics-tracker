@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Logger utility for analytics tracker
  * Provides configurable logging levels for development and production

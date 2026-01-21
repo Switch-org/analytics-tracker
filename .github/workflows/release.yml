@@ -52,7 +52,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Skip audit for dev dependencies (vulnerabilities are in semantic-release, npm itself)
+          # These don't affect the published package
+          npm ci --audit=false --fund=false
 
       - name: Run tests
         run: npm test

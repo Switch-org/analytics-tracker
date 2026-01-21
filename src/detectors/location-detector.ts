@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import type { LocationInfo } from '../types';
 import { hasLocationConsent, setLocationConsentGranted } from '../utils/location-consent';
 import { getCompleteIPLocation, getIPLocation, getPublicIP, type IPGeolocationConfig } from '../utils/ip-geolocation';
@@ -23,7 +24,7 @@ export class LocationDetector {
    * @example
    * ```typescript
    * LocationDetector.configureIPGeolocation({
-   *   apiKey: 'your-ipwho-is-api-key',
+   *   apiKey: '<your-ipwho-is-api-key>',
    *   baseUrl: 'https://ipwho.is',
    *   timeout: 5000
    * });

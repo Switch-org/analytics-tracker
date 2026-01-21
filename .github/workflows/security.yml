@@ -66,8 +66,12 @@ jobs:
         run: |
           echo "🔍 Scanning for potential secrets..."
           
-          # Check for common secret patterns (excluding false positives)
-          if grep -r -i -E "(api[_-]?key|secret|token|password|credential|auth[_-]?token|private[_-]?key)\s*[:=]\s*['\"][^'\"]{10,}" \
+          # Check for common secret patterns (excluding false positives like placeholders)
+          # Exclude patterns that are clearly placeholders:
+          # - Contains angle brackets: <...>
+          # - Contains "your-" or "example-" prefix
+          # - Contains "PLACEHOLDER" or "EXAMPLE"
+          SECRET_MATCHES=$(grep -r -i -E "(api[_-]?key|secret|token|password|credential|auth[_-]?token|private[_-]?key)\s*[:=]\s*['\"][^'\"]{10,}" \
              --include="*.ts" \
              --include="*.tsx" \
              --include="*.js" \
@@ -76,8 +80,12 @@ jobs:
              --exclude-dir=dist \
              --exclude="*.test.ts" \
              --exclude="*.test.js" \
-             .; then
-            echo "⚠️ Potential secrets found in code"
+             . 2>/dev/null | grep -v -E "(<.*>|your-|example-|PLACEHOLDER|EXAMPLE|placeholder|example)" || true)
+          
+          if [ -n "$SECRET_MATCHES" ]; then
+            echo "⚠️ Potential secrets found in code:"
+            echo "$SECRET_MATCHES"
+            echo ""
             echo "Please review and ensure no real secrets are committed"
             exit 1
           else

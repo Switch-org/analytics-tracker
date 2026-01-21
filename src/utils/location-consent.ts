@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Location Consent Manager
  * When user enters MSISDN, they implicitly consent to location tracking

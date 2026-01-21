@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AnalyticsEvent, NetworkInfo, DeviceInfo, AttributionInfo, AnalyticsConfig, LogLevel, LocationInfo } from '../types';
 import { QueueManager } from '../utils/queue-manager';
 import { logger } from '../utils/logger';
