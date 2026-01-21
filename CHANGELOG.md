@@ -1,3 +1,15 @@
+# [4.2.0](https://github.com/Switch-org/analytics-tracker/compare/v4.1.2...v4.2.0) (2026-01-21)
+
+
+### Features
+
+* update geo-location , essential data ([#28](https://github.com/Switch-org/analytics-tracker/issues/28)) ([fc63298](https://github.com/Switch-org/analytics-tracker/commit/fc63298f1ccfdeea36348d85ff9fc6a2b95c6211))
+* update geo-location , essential dataa ([#29](https://github.com/Switch-org/analytics-tracker/issues/29)) ([0f9c493](https://github.com/Switch-org/analytics-tracker/commit/0f9c49329c2e638688ffca8be5819107ff657a28))
+* updated essential logs ([bdb718a](https://github.com/Switch-org/analytics-tracker/commit/bdb718a3944a2399f9461f96edb589ffa40d5b07))
+* updated geo-locations, event validator for essential tracking + custom ip conf ([ec84f67](https://github.com/Switch-org/analytics-tracker/commit/ec84f67e2891df1d78fd99939a793cefdf0885ad))
+* updated logs for essential case ([553da62](https://github.com/Switch-org/analytics-tracker/commit/553da62ee45aad416e912fe76cc7436b3c15a456))
+* updated security ([7502d6e](https://github.com/Switch-org/analytics-tracker/commit/7502d6e3b45b26912cf48b83ab843a56b50373e5))
+
 ## [4.1.2](https://github.com/Switch-org/analytics-tracker/compare/v4.1.1...v4.1.2) (2025-12-31)
 
 
