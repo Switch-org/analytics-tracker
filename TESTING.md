@@ -306,7 +306,7 @@ AnalyticsService.trackPageView('/checkout');
 If you encounter issues:
 
 1. Check the browser console for errors
-2. Verify the endpoint is correct
+2. Verify the endpoint is correct 
 3. Check CORS settings if using a different domain
 4. Ensure the package is built (`npm run build`)
 5. Review the test server logs
