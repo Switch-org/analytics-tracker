@@ -1,3 +1,12 @@
+# [4.4.0](https://github.com/Switch-org/analytics-tracker/compare/v4.3.0...v4.4.0) (2026-01-30)
+
+
+### Features
+
+* update geo-location , essential data ([5511ff5](https://github.com/Switch-org/analytics-tracker/commit/5511ff545bc7850dea83e50c64270f8c112243e9))
+* update geo-location , essential dataa ([a8f0c67](https://github.com/Switch-org/analytics-tracker/commit/a8f0c6765f6e91e19ab45cedf197d9df4820e3a7))
+* updated key_api flow for customers ([5c58315](https://github.com/Switch-org/analytics-tracker/commit/5c58315f856ab924cc998ebfc84a88e93d5253d3))
+
 # [4.3.0](https://github.com/Switch-org/analytics-tracker/compare/v4.2.0...v4.3.0) (2026-01-30)
 
 
