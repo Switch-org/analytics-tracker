@@ -65,6 +65,81 @@ const location = await getIPLocation(userIp, {
 - Store the key in `.env` (e.g. `VITE_IPWHOIS_API_KEY` or `IPWHOIS_PRO_API_KEY`) and keep `.env` in `.gitignore`.
 - Omit `ipGeolocation` or `apiKey` to use the free tier.
 
+### Proxy for paid users in the browser (recommended)
+
+If paid users use your app in the **browser**, calling ipwho.is/ipwhois.pro directly would expose their **API key and IP** in the Network tab. Use a **proxy** so the browser calls your backend and your backend calls ipwho.is with the API key (stored only on the server).
+
+**Client config:** set only `proxyUrl`. Do **not** put `apiKey` or `baseUrl` in the client when using the proxy.
+
+```tsx
+useAnalytics({
+  config: {
+    apiEndpoint: '/api/analytics',
+    ipGeolocation: {
+      proxyUrl: '/api/ip-geolocation',  // Your backend route; API key stays on server
+      timeout: 5000,
+    },
+  },
+});
+```
+
+**Proxy contract (your backend must implement):**
+
+| Request | Behavior | Response |
+|--------|----------|---------|
+| `GET {proxyUrl}` | Use the request’s IP (from `X-Forwarded-For`, `X-Real-IP`, or `req.ip`), call ipwho.is/ipwhois.pro with your API key, return the JSON. | Same JSON as ipwho.is (e.g. `{ success, ip, country, city, ... }`) |
+| `GET {proxyUrl}?ip=1.2.3.4` | Look up IP `1.2.3.4` using your API key, return the JSON. | Same JSON as ipwho.is |
+
+**Example: Next.js App Router** (`app/api/ip-geolocation/route.ts`):
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { getIPFromRequest } from 'user-analytics-tracker';
+
+const IPWHOIS_BASE = process.env.IPWHOIS_BASE_URL || 'https://ipwho.is';
+const IPWHOIS_KEY = process.env.IPWHOIS_API_KEY; // Server-only; never in client
+
+export async function GET(req: NextRequest) {
+  const ip = req.nextUrl.searchParams.get('ip') || getIPFromRequest(req);
+  if (!ip) {
+    return NextResponse.json({ success: false }, { status: 400 });
+  }
+  const base = IPWHOIS_BASE.replace(/\/$/, '');
+  const url = `${base}/${encodeURIComponent(ip)}${IPWHOIS_KEY ? `?key=${encodeURIComponent(IPWHOIS_KEY)}` : ''}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  const data = await res.json();
+  return NextResponse.json(data);
+}
+```
+
+**Example: Express** (`routes/ip-geolocation.js`):
+
+```javascript
+const express = require('express');
+const { getIPFromRequest } = require('user-analytics-tracker');
+
+const router = express.Router();
+const IPWHOIS_BASE = process.env.IPWHOIS_BASE_URL || 'https://ipwho.is';
+const IPWHOIS_KEY = process.env.IPWHOIS_API_KEY;
+
+router.get('/api/ip-geolocation', async (req, res) => {
+  const ip = req.query.ip || getIPFromRequest(req);
+  if (!ip) {
+    return res.status(400).json({ success: false });
+  }
+  const base = IPWHOIS_BASE.replace(/\/$/, '');
+  const url = `${base}/${encodeURIComponent(ip)}${IPWHOIS_KEY ? `?key=${encodeURIComponent(IPWHOIS_KEY)}` : ''}`;
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  const data = await response.json();
+  res.json(data);
+});
+
+module.exports = router;
+```
+
+- Add `IPWHOIS_API_KEY` and optionally `IPWHOIS_BASE_URL` (e.g. `https://ipwhois.pro`) to your server `.env`.
+- Do not expose these env vars to the client; the proxy keeps the key server-side.
+
 ## Overview
 
 By default, the package stores **essential fields only** for all data types to minimize storage. However, you can customize which fields are stored for each data type based on your needs.

@@ -153,7 +153,9 @@ export interface AnalyticsConfig {
     apiKey?: string; // API key (use env var). Required for paid tiers; optional for ipwho.is free tier.
     baseUrl?: string; // API base URL (default: 'https://ipwho.is'). Use 'https://ipwhois.pro' for paid ipwhois.pro
     timeout?: number; // Request timeout in ms (default: 5000)
-    ip?: string; // When provided (paid/server-side), lookup this IP. URL format: baseUrl/{ip}?key=API_KEY
+    ip?: string; // When provided (paid/server-side), lookup this IP. Ignored when proxyUrl is set.
+    /** Proxy URL for paid users in browser: client calls this; your backend calls ipwho.is with API key (key never in browser). */
+    proxyUrl?: string;
   };
   // Field storage configuration - control which fields are stored for each data type
   fieldStorage?: {

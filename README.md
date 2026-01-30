@@ -95,12 +95,11 @@ const analytics = useAnalytics({
     // Metrics configuration
     enableMetrics: false,       // Enable metrics collection (default: false)
     
-    // IP Geolocation - optional. Use apiKey (env var) for higher rate limits; for paid ipwhois.pro add baseUrl + ip when you have it
+    // IP Geolocation - optional. For paid users in browser use proxyUrl so API key is not exposed (see docs)
     ipGeolocation: {
-      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,
-      baseUrl: 'https://ipwho.is', // or 'https://ipwhois.pro' for paid (URL: baseUrl/{IP}?key=API_KEY)
+      proxyUrl: '/api/ip-geolocation', // recommended for paid: browser → your backend → ipwho.is (key on server only)
+      // Or direct: apiKey, baseUrl, ip (server-side). Do not put apiKey in client when using proxyUrl.
       timeout: 5000,
-      ip: undefined, // set when you have the IP (e.g. server-side: getIPFromRequest(req))
     },
     
     // Field storage configuration (optional) - control which fields are stored
@@ -358,10 +357,11 @@ interface AnalyticsConfig {
   enableMetrics?: boolean;   // Enable metrics collection (default: false)
   // IP Geolocation (ipwho.is) - pass your own API key via env var for higher rate limits
   ipGeolocation?: {
-    apiKey?: string;   // Use env var. Required for paid; optional for ipwho.is free tier.
-    baseUrl?: string;  // Default: 'https://ipwho.is'. Use 'https://ipwhois.pro' for paid (URL: baseUrl/{IP}?key=API_KEY)
+    apiKey?: string;   // Use env var. Do not use in browser if using proxyUrl.
+    baseUrl?: string;  // Default: 'https://ipwho.is'. Ignored when proxyUrl is set.
     timeout?: number;  // Default: 5000
-    ip?: string;       // When provided (paid/server-side), lookup this IP
+    ip?: string;       // When provided (server-side), lookup this IP. Ignored when proxyUrl is set.
+    proxyUrl?: string; // For paid users in browser: client calls this; backend calls ipwho.is with API key (key never in client).
   };
   // Existing options
   autoSend?: boolean;
@@ -1008,7 +1008,7 @@ MIT © [Switch Org](https://github.com/switch-org)
 
 ## 🙏 Acknowledgments
 
-- Uses [ipwho.is](https://ipwho.is/) for IP geolocation and connection data (free tier; consumers can pass their own API key via `config.ipGeolocation.apiKey` for higher rate limits)
+- Uses [ipwho.is](https://ipwho.is/) for IP geolocation (free/paid). For paid users in the browser, use `config.ipGeolocation.proxyUrl` so the API key is never exposed; see [Field Storage / IP Geolocation](docs/ip-location-configuration.md#proxy-for-paid-users-in-the-browser-recommended).
 - Built with modern web APIs (User-Agent Client Hints, Geolocation API)
 
 <!-- ## 📞 Support

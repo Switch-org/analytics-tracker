@@ -24,18 +24,29 @@ import type { IPLocation } from '../types';
  * 3) Paid subscription (e.g. ipwhois.pro):
  *    - URL format: https://ipwhois.pro/{IP}?key=YOUR_API_KEY
  *    - Pass baseUrl: 'https://ipwhois.pro', apiKey, and ip when you have the IP.
+ *
+ * 4) Paid users in the browser (recommended): use a proxy so API key and IP are not exposed.
+ *    - Set ipGeolocation.proxyUrl to your backend route (e.g. '/api/ip-geolocation').
+ *    - Browser calls the proxy; proxy calls ipwho.is/ipwhois.pro with API key from env and request IP.
+ *    - See docs for proxy contract and example backend implementation.
  */
 
 /**
  * IP Geolocation configuration interface
- * Supports ipwho.is (free/paid) and ipwhois.pro (paid: baseUrl/{IP}?key=API_KEY)
+ * Supports ipwho.is (free/paid), ipwhois.pro (paid), and proxy (paid users in browser - no key in client).
  */
 export interface IPGeolocationConfig {
-  apiKey?: string; // Optional API key (ipwho.is or ipwhois.pro). Use env var; required for paid tiers.
-  baseUrl?: string; // API base URL (default: 'https://ipwho.is'). Use 'https://ipwhois.pro' for paid ipwhois.pro
+  apiKey?: string; // Optional API key. Use env var; do not use in browser if you use proxyUrl.
+  baseUrl?: string; // API base URL (default: 'https://ipwho.is'). Ignored when proxyUrl is set.
   timeout?: number; // Request timeout in ms (default: 5000)
-  /** When provided (e.g. server-side or paid flow), lookup this IP. URL becomes baseUrl/{ip}?key=API_KEY */
+  /** When provided (server-side), lookup this IP. Ignored when proxyUrl is set. */
   ip?: string;
+  /**
+   * When set, the client calls this URL instead of ipwho.is. Your backend holds the API key and
+   * calls ipwho.is/ipwhois.pro server-side. Use for paid users in the browser so key and IP are not exposed.
+   * Contract: GET proxyUrl → auto-detect IP; GET proxyUrl?ip=1.2.3.4 → lookup that IP. Response = same JSON as ipwho.is.
+   */
+  proxyUrl?: string;
 }
 
 /**
@@ -59,6 +70,9 @@ export interface IPGeolocationConfig {
  *   apiKey: '<key>',
  *   ip: '203.0.113.42',
  * });
+ *
+ * // Paid users in browser: use proxy so API key is not exposed (GET proxyUrl → same JSON)
+ * const location = await getCompleteIPLocation({ proxyUrl: '/api/ip-geolocation', timeout: 5000 });
  * ```
  */
 export async function getCompleteIPLocation(config?: IPGeolocationConfig): Promise<IPLocation | null> {
@@ -67,32 +81,35 @@ export async function getCompleteIPLocation(config?: IPGeolocationConfig): Promi
     return null;
   }
 
-  // Use provided config or defaults
-  const baseUrl = config?.baseUrl || 'https://ipwho.is';
-  const timeout = config?.timeout || 5000;
-  const apiKey = config?.apiKey;
-  const configIp = config?.ip?.trim();
+  const timeout = config?.timeout ?? 5000;
 
   try {
-    // Build URL: baseUrl/{IP}?key=API_KEY when IP provided (paid/server-side); else baseUrl/ or baseUrl?key=...
-    let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    let url: string;
 
-    if (configIp) {
-      // Paid / server-side: lookup specific IP. Format: https://ipwhois.pro/{IP}?key=YOUR_API_KEY
-      url += `/${encodeURIComponent(configIp)}`;
-      if (apiKey) {
-        url += `?key=${encodeURIComponent(apiKey)}`;
-      }
+    if (config?.proxyUrl?.trim()) {
+      // Paid users in browser: call proxy; proxy holds API key and calls ipwho.is server-side (no key/IP exposed)
+      url = config.proxyUrl.trim();
     } else {
-      // Auto-detect requestor IP (root path + optional key)
-      url += '/';
-      if (apiKey) {
-        url += `?key=${encodeURIComponent(apiKey)}`;
+      // Direct call to ipwho.is / ipwhois.pro
+      const baseUrl = config?.baseUrl || 'https://ipwho.is';
+      const apiKey = config?.apiKey;
+      const configIp = config?.ip?.trim();
+      url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+
+      if (configIp) {
+        url += `/${encodeURIComponent(configIp)}`;
+        if (apiKey) {
+          url += `?key=${encodeURIComponent(apiKey)}`;
+        }
+      } else {
+        url += '/';
+        if (apiKey) {
+          url += `?key=${encodeURIComponent(apiKey)}`;
+        }
       }
     }
 
-    // Call API: with IP path it returns that IP's location; without path it returns requestor's IP
-    // This is the HIGH PRIORITY source - gets IP, location, connection, timezone, flag, etc. in one call
+    // Call API or proxy: same response shape (ipwho.is JSON)
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -188,13 +205,15 @@ export async function getPublicIP(config?: IPGeolocationConfig): Promise<string 
     return completeLocation.ip;
   }
 
-  // Fallback: try direct IP fetch (less efficient, lower priority)
+  // Fallback: try direct IP fetch (only when not using proxy)
+  if (config?.proxyUrl?.trim()) {
+    return null;
+  }
   try {
     const baseUrl = config?.baseUrl || 'https://ipwho.is';
     const timeout = config?.timeout || 5000;
     const apiKey = config?.apiKey;
 
-    // Build URL with optional API key (auto-detect requestor IP)
     let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     if (apiKey) {
       url += `?key=${encodeURIComponent(apiKey)}`;
@@ -274,25 +293,28 @@ export async function getIPLocation(ip: string, config?: IPGeolocationConfig): P
   }
 
   try {
-    // Use provided config or defaults
-    const baseUrl = config?.baseUrl || 'https://ipwho.is';
-    const timeout = config?.timeout || 5000;
-    const apiKey = config?.apiKey;
+    const timeout = config?.timeout ?? 5000;
+    let url: string;
 
-    // Build URL: baseUrl/{IP}?key=API_KEY (same format as ipwhois.pro paid: https://ipwhois.pro/{IP}?key=YOUR_API_KEY)
-    let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    url += `/${encodeURIComponent(ip)}`;
-    if (apiKey) {
-      url += `?key=${encodeURIComponent(apiKey)}`;
+    if (config?.proxyUrl?.trim()) {
+      const proxy = config.proxyUrl.trim();
+      const sep = proxy.includes('?') ? '&' : '?';
+      url = `${proxy}${sep}ip=${encodeURIComponent(ip)}`;
+    } else {
+      const baseUrl = config?.baseUrl || 'https://ipwho.is';
+      const apiKey = config?.apiKey;
+      url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+      url += `/${encodeURIComponent(ip)}`;
+      if (apiKey) {
+        url += `?key=${encodeURIComponent(apiKey)}`;
+      }
     }
 
-    // Using ipwho.is / ipwhois.pro API
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
       },
-      // Add timeout to prevent hanging
       signal: AbortSignal.timeout(timeout),
     });
 
