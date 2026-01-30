@@ -148,11 +148,12 @@ export interface AnalyticsConfig {
   logLevel?: LogLevel; // Logging verbosity (default: 'warn')
   // Metrics configuration
   enableMetrics?: boolean; // Enable metrics collection (default: false)
-  // IP Geolocation API configuration (ipwho.is). Pass your own key via env (e.g. VITE_IPWHOIS_API_KEY).
+  // IP Geolocation API configuration (ipwho.is or ipwhois.pro). Pass apiKey via env; for paid/server-side pass ip when you have it.
   ipGeolocation?: {
-    apiKey?: string; // Your ipwho.is API key (optional - free tier works without key). Use env var, e.g. import.meta.env.VITE_IPWHOIS_API_KEY
-    baseUrl?: string; // Custom API base URL (default: 'https://ipwho.is')
+    apiKey?: string; // API key (use env var). Required for paid tiers; optional for ipwho.is free tier.
+    baseUrl?: string; // API base URL (default: 'https://ipwho.is'). Use 'https://ipwhois.pro' for paid ipwhois.pro
     timeout?: number; // Request timeout in ms (default: 5000)
+    ip?: string; // When provided (paid/server-side), lookup this IP. URL format: baseUrl/{ip}?key=API_KEY
   };
   // Field storage configuration - control which fields are stored for each data type
   fieldStorage?: {

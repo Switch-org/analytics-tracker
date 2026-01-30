@@ -95,10 +95,12 @@ const analytics = useAnalytics({
     // Metrics configuration
     enableMetrics: false,       // Enable metrics collection (default: false)
     
-    // IP Geolocation (ipwho.is) - optional; use your own API key for higher rate limits
+    // IP Geolocation - optional. Use apiKey (env var) for higher rate limits; for paid ipwhois.pro add baseUrl + ip when you have it
     ipGeolocation: {
-      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY, // Use env var; omit for free tier
+      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,
+      baseUrl: 'https://ipwho.is', // or 'https://ipwhois.pro' for paid (URL: baseUrl/{IP}?key=API_KEY)
       timeout: 5000,
+      ip: undefined, // set when you have the IP (e.g. server-side: getIPFromRequest(req))
     },
     
     // Field storage configuration (optional) - control which fields are stored
@@ -356,9 +358,10 @@ interface AnalyticsConfig {
   enableMetrics?: boolean;   // Enable metrics collection (default: false)
   // IP Geolocation (ipwho.is) - pass your own API key via env var for higher rate limits
   ipGeolocation?: {
-    apiKey?: string;   // Use env var, e.g. VITE_IPWHOIS_API_KEY or REACT_APP_IPWHOIS_API_KEY
-    baseUrl?: string;  // Default: 'https://ipwho.is'
-    timeout?: number; // Default: 5000
+    apiKey?: string;   // Use env var. Required for paid; optional for ipwho.is free tier.
+    baseUrl?: string;  // Default: 'https://ipwho.is'. Use 'https://ipwhois.pro' for paid (URL: baseUrl/{IP}?key=API_KEY)
+    timeout?: number;  // Default: 5000
+    ip?: string;       // When provided (paid/server-side), lookup this IP
   };
   // Existing options
   autoSend?: boolean;
@@ -747,11 +750,16 @@ import { getIPLocation, getIPFromRequest } from 'user-analytics-tracker';
 
 // In your API route (Next.js example)
 export async function POST(req: Request) {
-  // Extract IP from request headers
   const ip = getIPFromRequest(req);
-  
-  // Get location data from IP
+
+  // Free tier (ipwho.is)
   const location = await getIPLocation(ip);
+
+  // Paid (ipwhois.pro): baseUrl/{IP}?key=API_KEY
+  // const location = await getIPLocation(ip, {
+  //   baseUrl: 'https://ipwhois.pro',
+  //   apiKey: process.env.IPWHOIS_PRO_API_KEY,
+  // });
   // location contains: country, region, city, lat, lon, timezone, isp, etc.
 }
 ```

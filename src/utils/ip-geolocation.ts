@@ -13,23 +13,29 @@ import type { IPLocation } from '../types';
  *
  * 1) Browser / client-side:
  *    - Do NOT pass an IP. Call getCompleteIPLocation(config) with no IP.
- *    - The request goes: user's browser → ipwho.is; ipwho.is sees the visitor's
- *      public IP and returns it. The IP is never stored or sent by your code.
- *    - For config.apiKey: avoid hardcoding. Use a build-time env var or omit (free tier).
+ *    - The request goes: user's browser → API; the API sees the visitor's IP and returns it.
+ *    - For config.apiKey: use env var or omit (free tier).
  *
  * 2) Server-side (Node/Express/Next etc.):
- *    - Get the visitor's IP from the incoming request with getIPFromRequest(req).
- *    - Then call getIPLocation(userIp, config) to geolocate that IP.
- *    - Keep apiKey in process.env (e.g. IPWHOIS_API_KEY); never commit it.
+ *    - Get the visitor's IP with getIPFromRequest(req), then call getIPLocation(userIp, config).
+ *    - Or pass ip + apiKey in config: getCompleteIPLocation({ baseUrl, apiKey, ip: userIp }).
+ *    - Keep apiKey in process.env; never commit it.
+ *
+ * 3) Paid subscription (e.g. ipwhois.pro):
+ *    - URL format: https://ipwhois.pro/{IP}?key=YOUR_API_KEY
+ *    - Pass baseUrl: 'https://ipwhois.pro', apiKey, and ip when you have the IP.
  */
 
 /**
  * IP Geolocation configuration interface
+ * Supports ipwho.is (free/paid) and ipwhois.pro (paid: baseUrl/{IP}?key=API_KEY)
  */
 export interface IPGeolocationConfig {
-  apiKey?: string; // Optional API key for ipwho.is (for higher rate limits)
-  baseUrl?: string; // API base URL (default: 'https://ipwho.is')
+  apiKey?: string; // Optional API key (ipwho.is or ipwhois.pro). Use env var; required for paid tiers.
+  baseUrl?: string; // API base URL (default: 'https://ipwho.is'). Use 'https://ipwhois.pro' for paid ipwhois.pro
   timeout?: number; // Request timeout in ms (default: 5000)
+  /** When provided (e.g. server-side or paid flow), lookup this IP. URL becomes baseUrl/{ip}?key=API_KEY */
+  ip?: string;
 }
 
 /**
@@ -41,13 +47,17 @@ export interface IPGeolocationConfig {
  * 
  * @example
  * ```typescript
- * // Without API key (free tier)
+ * // Without API key (free tier) - auto-detect requestor IP
  * const location = await getCompleteIPLocation();
- * 
- * // With API key (for higher rate limits)
- * const location = await getCompleteIPLocation({ 
- *   apiKey: '<your-api-key>',
- *   baseUrl: 'https://ipwho.is'
+ *
+ * // With API key (higher rate limits)
+ * const location = await getCompleteIPLocation({ apiKey: '<key>', baseUrl: 'https://ipwho.is' });
+ *
+ * // Paid / server-side: provide IP + API key (e.g. ipwhois.pro)
+ * const location = await getCompleteIPLocation({
+ *   baseUrl: 'https://ipwhois.pro',
+ *   apiKey: '<key>',
+ *   ip: '203.0.113.42',
  * });
  * ```
  */
@@ -61,19 +71,27 @@ export async function getCompleteIPLocation(config?: IPGeolocationConfig): Promi
   const baseUrl = config?.baseUrl || 'https://ipwho.is';
   const timeout = config?.timeout || 5000;
   const apiKey = config?.apiKey;
+  const configIp = config?.ip?.trim();
 
   try {
-    // Build URL with optional API key
+    // Build URL: baseUrl/{IP}?key=API_KEY when IP provided (paid/server-side); else baseUrl/ or baseUrl?key=...
     let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    
-    // Add API key as query parameter if provided
-    if (apiKey) {
-      url += `?key=${encodeURIComponent(apiKey)}`;
+
+    if (configIp) {
+      // Paid / server-side: lookup specific IP. Format: https://ipwhois.pro/{IP}?key=YOUR_API_KEY
+      url += `/${encodeURIComponent(configIp)}`;
+      if (apiKey) {
+        url += `?key=${encodeURIComponent(apiKey)}`;
+      }
     } else {
+      // Auto-detect requestor IP (root path + optional key)
       url += '/';
+      if (apiKey) {
+        url += `?key=${encodeURIComponent(apiKey)}`;
+      }
     }
 
-    // Call ipwho.is without IP parameter - it auto-detects user's IP and returns everything
+    // Call API: with IP path it returns that IP's location; without path it returns requestor's IP
     // This is the HIGH PRIORITY source - gets IP, location, connection, timezone, flag, etc. in one call
     const response = await fetch(url, {
       method: 'GET',
@@ -159,6 +177,11 @@ export async function getCompleteIPLocation(config?: IPGeolocationConfig): Promi
  * ```
  */
 export async function getPublicIP(config?: IPGeolocationConfig): Promise<string | null> {
+  // When consumer provides IP (paid/server-side), return it without fetching
+  if (config?.ip?.trim()) {
+    return config.ip.trim();
+  }
+
   // Try to get complete location first (includes IP)
   const completeLocation = await getCompleteIPLocation(config);
   if (completeLocation?.ip) {
@@ -171,7 +194,7 @@ export async function getPublicIP(config?: IPGeolocationConfig): Promise<string 
     const timeout = config?.timeout || 5000;
     const apiKey = config?.apiKey;
 
-    // Build URL with optional API key
+    // Build URL with optional API key (auto-detect requestor IP)
     let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     if (apiKey) {
       url += `?key=${encodeURIComponent(apiKey)}`;
@@ -221,11 +244,15 @@ export async function getPublicIP(config?: IPGeolocationConfig): Promise<string 
  * const location = await getIPLocation('203.0.113.42');
  * 
  * // With API key
- * const location = await getIPLocation('203.0.113.42', { 
- *   apiKey: '<your-api-key>' 
+ * const location = await getIPLocation('203.0.113.42', { apiKey: '<key>' });
+ *
+ * // Paid ipwhois.pro: same URL format baseUrl/{IP}?key=API_KEY
+ * const location = await getIPLocation('203.0.113.42', {
+ *   baseUrl: 'https://ipwhois.pro',
+ *   apiKey: '<key>',
  * });
  * ```
- * 
+ *
  * Note: If you don't have an IP yet, use getCompleteIPLocation() which gets everything in one call
  */
 export async function getIPLocation(ip: string, config?: IPGeolocationConfig): Promise<IPLocation | null> {
@@ -252,16 +279,14 @@ export async function getIPLocation(ip: string, config?: IPGeolocationConfig): P
     const timeout = config?.timeout || 5000;
     const apiKey = config?.apiKey;
 
-    // Build URL with IP and optional API key
+    // Build URL: baseUrl/{IP}?key=API_KEY (same format as ipwhois.pro paid: https://ipwhois.pro/{IP}?key=YOUR_API_KEY)
     let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    url += `/${ip}`;
-    
-    // Add API key as query parameter if provided
+    url += `/${encodeURIComponent(ip)}`;
     if (apiKey) {
       url += `?key=${encodeURIComponent(apiKey)}`;
     }
 
-    // Using ipwho.is API
+    // Using ipwho.is / ipwhois.pro API
     const response = await fetch(url, {
       method: 'GET',
       headers: {

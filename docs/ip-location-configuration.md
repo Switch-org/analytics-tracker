@@ -2,9 +2,16 @@
 
 This guide explains how to configure which fields are stored for all analytics data types (IP location, device, network, location, attribution) to optimize storage capacity.
 
-## Passing your ipwho.is API key (optional)
+## Passing your API key and IP (optional)
 
-The package uses [ipwho.is](https://ipwho.is/) for IP geolocation. The **free tier works without a key**. To use your own API key for higher rate limits, pass it via `config.ipGeolocation` and **use an environment variable** so the key is not committed:
+The package supports [ipwho.is](https://ipwho.is/) (free/paid) and paid providers like [ipwhois.pro](https://ipwhois.pro/). The **free tier works without a key**. For higher rate limits or paid subscriptions, pass `apiKey` (use an env var) and optionally `baseUrl` and `ip`.
+
+### URL format
+
+- **Auto-detect requestor IP:** `baseUrl/?key=API_KEY` (or `baseUrl/` without key).
+- **Lookup a specific IP (paid / server-side):** `baseUrl/{IP}?key=API_KEY` — e.g. `https://ipwhois.pro/203.0.113.42?key=YOUR_API_KEY`.
+
+### Client-side (no IP)
 
 ```tsx
 import { useAnalytics } from 'user-analytics-tracker';
@@ -13,9 +20,7 @@ useAnalytics({
   config: {
     apiEndpoint: '/api/analytics',
     ipGeolocation: {
-      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,  // Vite
-      // apiKey: process.env.REACT_APP_IPWHOIS_API_KEY,  // Create React App
-      // apiKey: process.env.NEXT_PUBLIC_IPWHOIS_API_KEY, // Next.js
+      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,
       baseUrl: 'https://ipwho.is',
       timeout: 5000,
     },
@@ -29,8 +34,35 @@ useAnalytics({
 });
 ```
 
-- Get a key at [ipwho.is](https://ipwho.is/).
-- Add the variable to `.env` (e.g. `VITE_IPWHOIS_API_KEY=your-key`) and keep `.env` in `.gitignore`.
+### Paid subscription (ipwhois.pro) with IP + API key
+
+When you have the user’s IP (e.g. server-side from `getIPFromRequest(req)`), pass `ip` and use the paid base URL:
+
+```tsx
+// Server-side example: you have the request IP and paid apiKey
+import { getCompleteIPLocation, getIPFromRequest } from 'user-analytics-tracker';
+
+// In your API route / handler
+const userIp = getIPFromRequest(req);
+const location = await getCompleteIPLocation({
+  baseUrl: 'https://ipwhois.pro',
+  apiKey: process.env.IPWHOIS_PRO_API_KEY,
+  ip: userIp,
+  timeout: 5000,
+});
+```
+
+Or with `getIPLocation(ip, config)`:
+
+```tsx
+const location = await getIPLocation(userIp, {
+  baseUrl: 'https://ipwhois.pro',
+  apiKey: process.env.IPWHOIS_PRO_API_KEY,
+});
+```
+
+- Get a key at [ipwho.is](https://ipwho.is/) or [ipwhois.pro](https://ipwhois.pro/).
+- Store the key in `.env` (e.g. `VITE_IPWHOIS_API_KEY` or `IPWHOIS_PRO_API_KEY`) and keep `.env` in `.gitignore`.
 - Omit `ipGeolocation` or `apiKey` to use the free tier.
 
 ## Overview
