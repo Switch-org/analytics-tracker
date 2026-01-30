@@ -36,12 +36,18 @@ export interface UseAnalyticsOptions {
 
 /**
  * React hook for analytics tracking
- * 
+ *
+ * To use your own ipwho.is API key (higher rate limits), pass ipGeolocation in config.
+ * Use an env var so the key is not committed (e.g. VITE_IPWHOIS_API_KEY, REACT_APP_IPWHOIS_API_KEY).
+ *
  * @example
  * ```tsx
  * const { sessionId, networkInfo, deviceInfo, logEvent } = useAnalytics({
  *   autoSend: true,
- *   config: { apiEndpoint: '/api/analytics' }
+ *   config: {
+ *     apiEndpoint: '/api/analytics',
+ *     ipGeolocation: { apiKey: import.meta.env.VITE_IPWHOIS_API_KEY }, // optional; omit for free tier
+ *   },
  * });
  * ```
  */
@@ -63,6 +69,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
         sessionTimeout: config.sessionTimeout,
         fieldStorage: config.fieldStorage,
         ipLocationFields: config.ipLocationFields, // Legacy support
+        ipGeolocation: config.ipGeolocation, // ipwho.is API key (use env var, e.g. VITE_IPWHOIS_API_KEY)
       });
     }
   }, [
@@ -77,6 +84,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
     config?.sessionTimeout,
     config?.fieldStorage,
     config?.ipLocationFields,
+    config?.ipGeolocation,
   ]);
 
   const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null);

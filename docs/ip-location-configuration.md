@@ -2,6 +2,37 @@
 
 This guide explains how to configure which fields are stored for all analytics data types (IP location, device, network, location, attribution) to optimize storage capacity.
 
+## Passing your ipwho.is API key (optional)
+
+The package uses [ipwho.is](https://ipwho.is/) for IP geolocation. The **free tier works without a key**. To use your own API key for higher rate limits, pass it via `config.ipGeolocation` and **use an environment variable** so the key is not committed:
+
+```tsx
+import { useAnalytics } from 'user-analytics-tracker';
+
+useAnalytics({
+  config: {
+    apiEndpoint: '/api/analytics',
+    ipGeolocation: {
+      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,  // Vite
+      // apiKey: process.env.REACT_APP_IPWHOIS_API_KEY,  // Create React App
+      // apiKey: process.env.NEXT_PUBLIC_IPWHOIS_API_KEY, // Next.js
+      baseUrl: 'https://ipwho.is',
+      timeout: 5000,
+    },
+    fieldStorage: {
+      ipLocation: { mode: 'essential' },
+      deviceInfo: { mode: 'essential' },
+      location: { mode: 'essential' },
+      attribution: { mode: 'essential' },
+    },
+  },
+});
+```
+
+- Get a key at [ipwho.is](https://ipwho.is/).
+- Add the variable to `.env` (e.g. `VITE_IPWHOIS_API_KEY=your-key`) and keep `.env` in `.gitignore`.
+- Omit `ipGeolocation` or `apiKey` to use the free tier.
+
 ## Overview
 
 By default, the package stores **essential fields only** for all data types to minimize storage. However, you can customize which fields are stored for each data type based on your needs.
@@ -253,8 +284,11 @@ function App() {
   const analytics = useAnalytics({
     config: {
       apiEndpoint: '/api/analytics',
+      ipGeolocation: {
+        apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,
+        timeout: 5000,
+      },
       fieldStorage: {
-        // Configure all data types
         ipLocation: { mode: 'essential' },
         deviceInfo: { mode: 'essential' },
         networkInfo: { mode: 'essential' },

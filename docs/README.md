@@ -31,6 +31,7 @@ Welcome to the `user-analytics-tracker` documentation. This directory contains c
    - Troubleshooting upgrade issues
 
 4. **[Field Storage Configuration](./ip-location-configuration.md)** - Configure field storage for all data types
+   - Passing your ipwho.is API key via `config.ipGeolocation` (optional; use env var)
    - Storage optimization for IP location, device, network, location, attribution
    - Essential vs all vs custom modes
    - Per-data-type configuration

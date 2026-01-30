@@ -95,6 +95,12 @@ const analytics = useAnalytics({
     // Metrics configuration
     enableMetrics: false,       // Enable metrics collection (default: false)
     
+    // IP Geolocation (ipwho.is) - optional; use your own API key for higher rate limits
+    ipGeolocation: {
+      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY, // Use env var; omit for free tier
+      timeout: 5000,
+    },
+    
     // Field storage configuration (optional) - control which fields are stored
     fieldStorage: {
       ipLocation: { mode: 'essential' },    // IP location fields (includes connection data)
@@ -156,13 +162,20 @@ Use environment variables for different environments:
 ```tsx
 // .env.local (development)
 // NEXT_PUBLIC_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+// NEXT_PUBLIC_IPWHOIS_API_KEY=your-ipwho-is-key  // optional, for higher rate limits
 
 // .env.production
 // NEXT_PUBLIC_ANALYTICS_API=https://api.yourcompany.com/analytics
+// NEXT_PUBLIC_IPWHOIS_API_KEY=your-ipwho-is-key
 
 const analytics = useAnalytics({
   config: {
     apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+    // Optional: your own ipwho.is API key (use env var; omit for free tier)
+    ipGeolocation: {
+      apiKey: process.env.NEXT_PUBLIC_IPWHOIS_API_KEY,
+      timeout: 5000,
+    },
   },
 });
 ```
@@ -341,6 +354,12 @@ interface AnalyticsConfig {
   logLevel?: LogLevel;       // 'silent' | 'error' | 'warn' | 'info' | 'debug' (default: 'warn')
   // Metrics options
   enableMetrics?: boolean;   // Enable metrics collection (default: false)
+  // IP Geolocation (ipwho.is) - pass your own API key via env var for higher rate limits
+  ipGeolocation?: {
+    apiKey?: string;   // Use env var, e.g. VITE_IPWHOIS_API_KEY or REACT_APP_IPWHOIS_API_KEY
+    baseUrl?: string;  // Default: 'https://ipwho.is'
+    timeout?: number; // Default: 5000
+  };
   // Existing options
   autoSend?: boolean;
   enableLocation?: boolean;
@@ -981,7 +1000,7 @@ MIT © [Switch Org](https://github.com/switch-org)
 
 ## 🙏 Acknowledgments
 
-- Uses [ipwho.is](https://ipwho.is/) for free IP geolocation and accurate connection data
+- Uses [ipwho.is](https://ipwho.is/) for IP geolocation and connection data (free tier; consumers can pass their own API key via `config.ipGeolocation.apiKey` for higher rate limits)
 - Built with modern web APIs (User-Agent Client Hints, Geolocation API)
 
 <!-- ## 📞 Support
