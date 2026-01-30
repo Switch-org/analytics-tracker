@@ -148,9 +148,9 @@ export interface AnalyticsConfig {
   logLevel?: LogLevel; // Logging verbosity (default: 'warn')
   // Metrics configuration
   enableMetrics?: boolean; // Enable metrics collection (default: false)
-  // IP Geolocation API configuration (ipwho.is)
+  // IP Geolocation API configuration (ipwho.is). Pass your own key via env (e.g. VITE_IPWHOIS_API_KEY).
   ipGeolocation?: {
-    apiKey?: string; // Your ipwho.is API key (optional - free tier works without key)
+    apiKey?: string; // Your ipwho.is API key (optional - free tier works without key). Use env var, e.g. import.meta.env.VITE_IPWHOIS_API_KEY
     baseUrl?: string; // Custom API base URL (default: 'https://ipwho.is')
     timeout?: number; // Request timeout in ms (default: 5000)
   };

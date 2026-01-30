@@ -134,6 +134,11 @@ Use environment variables for different environments:
 const analytics = useAnalytics({
   config: {
     apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+    // Optional: your own ipwho.is API key (use env var; omit for free tier)
+    ipGeolocation: {
+      apiKey: process.env.NEXT_PUBLIC_IPWHOIS_API_KEY,
+      timeout: 5000,
+    },
   },
 });
 ```
@@ -144,28 +149,36 @@ const analytics = useAnalytics({
 ```bash
 # .env.development
 REACT_APP_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+REACT_APP_IPWHOIS_API_KEY=your-ipwho-is-key   # optional, for higher rate limits
 
 # .env.production
 REACT_APP_ANALYTICS_API=https://api.yourcompany.com/analytics
+REACT_APP_IPWHOIS_API_KEY=your-ipwho-is-key
 ```
 
 **Next.js:**
 ```bash
 # .env.local (development)
 NEXT_PUBLIC_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+NEXT_PUBLIC_IPWHOIS_API_KEY=your-ipwho-is-key   # optional
 
 # .env.production
 NEXT_PUBLIC_ANALYTICS_API=https://api.yourcompany.com/analytics
+NEXT_PUBLIC_IPWHOIS_API_KEY=your-ipwho-is-key
 ```
 
 **Vite:**
 ```bash
 # .env.development
 VITE_ANALYTICS_API=https://api-dev.yourcompany.com/analytics
+VITE_IPWHOIS_API_KEY=your-ipwho-is-key   # optional
 
 # .env.production
 VITE_ANALYTICS_API=https://api.yourcompany.com/analytics
+VITE_IPWHOIS_API_KEY=your-ipwho-is-key
 ```
+
+**Passing your ipwho.is API key:** The package uses [ipwho.is](https://ipwho.is/) for IP geolocation. The free tier works without a key. To use your own API key (for higher rate limits), add `ipGeolocation.apiKey` to your config and set it from an environment variable so the key is not committed. Get a key at [ipwho.is](https://ipwho.is/).
 
 ### Configuration Examples by Framework
 
@@ -178,8 +191,11 @@ import { useAnalytics } from 'user-analytics-tracker';
 function App() {
   const analytics = useAnalytics({
     config: {
-      // Use environment variable with fallback
       apiEndpoint: process.env.REACT_APP_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
+      ipGeolocation: {
+        apiKey: process.env.REACT_APP_IPWHOIS_API_KEY, // optional; omit for free tier
+        timeout: 5000,
+      },
     },
   });
 
@@ -198,8 +214,11 @@ import { useAnalytics } from 'user-analytics-tracker';
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   useAnalytics({
     config: {
-      // Use Next.js environment variable
       apiEndpoint: process.env.NEXT_PUBLIC_ANALYTICS_API || '/api/analytics',
+      ipGeolocation: {
+        apiKey: process.env.NEXT_PUBLIC_IPWHOIS_API_KEY,
+        timeout: 5000,
+      },
     },
   });
 
@@ -235,8 +254,11 @@ import { useAnalytics } from 'user-analytics-tracker';
 function App() {
   useAnalytics({
     config: {
-      // Use Vite environment variable
       apiEndpoint: import.meta.env.VITE_ANALYTICS_API || 'https://api.yourcompany.com/analytics',
+      ipGeolocation: {
+        apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,
+        timeout: 5000,
+      },
     },
   });
 
@@ -520,6 +542,26 @@ function App() {
 
 ## 🔧 React Hook Usage
 
+### Passing your ipwho.is API key (optional)
+
+The package uses [ipwho.is](https://ipwho.is/) for IP geolocation. The **free tier works without a key**. If you need higher rate limits, you can pass your own API key via `config.ipGeolocation`. **Use an environment variable** so the key is not committed:
+
+```tsx
+useAnalytics({
+  config: {
+    apiEndpoint: '/api/analytics',
+    ipGeolocation: {
+      apiKey: import.meta.env.VITE_IPWHOIS_API_KEY,  // Vite
+      // apiKey: process.env.REACT_APP_IPWHOIS_API_KEY,  // CRA
+      // apiKey: process.env.NEXT_PUBLIC_IPWHOIS_API_KEY, // Next.js
+      timeout: 5000,
+    },
+  },
+});
+```
+
+Get a key at [ipwho.is](https://ipwho.is/). Add the env var to `.env` (and keep `.env` in `.gitignore`).
+
 ### Basic Hook Configuration
 
 ```tsx
@@ -533,6 +575,7 @@ function MyComponent() {
     // Configuration options
     config: {
       apiEndpoint: '/api/analytics', // Required: Your backend endpoint
+      ipGeolocation: { apiKey: import.meta.env.VITE_IPWHOIS_API_KEY }, // optional
       enableLocation: false,          // Enable location tracking
     },
     

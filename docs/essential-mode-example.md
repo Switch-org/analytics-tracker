@@ -11,6 +11,10 @@ import { AnalyticsService } from 'user-analytics-tracker';
 
 AnalyticsService.configure({
   apiEndpoint: '/api/analytics',
+  ipGeolocation: {
+    apiKey: process.env.VITE_IPWHOIS_API_KEY, // optional; use env var; omit for free tier
+    timeout: 5000,
+  },
   fieldStorage: {
     deviceInfo: { mode: 'essential' },
     ipLocation: { mode: 'essential' },

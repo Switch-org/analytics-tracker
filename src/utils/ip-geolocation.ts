@@ -5,9 +5,22 @@ import type { IPLocation } from '../types';
  * IP Geolocation Service
  * Fetches location data (country, region, city) from user's IP address
  * Uses ipwho.is API (supports optional API key for higher rate limits)
- * 
+ *
  * Stores all keys dynamically from the API response, including nested objects
  * This ensures we capture all available data and any new fields added by the API
+ *
+ * --- Where does the IP come from? (secure usage) ---
+ *
+ * 1) Browser / client-side:
+ *    - Do NOT pass an IP. Call getCompleteIPLocation(config) with no IP.
+ *    - The request goes: user's browser → ipwho.is; ipwho.is sees the visitor's
+ *      public IP and returns it. The IP is never stored or sent by your code.
+ *    - For config.apiKey: avoid hardcoding. Use a build-time env var or omit (free tier).
+ *
+ * 2) Server-side (Node/Express/Next etc.):
+ *    - Get the visitor's IP from the incoming request with getIPFromRequest(req).
+ *    - Then call getIPLocation(userIp, config) to geolocate that IP.
+ *    - Keep apiKey in process.env (e.g. IPWHOIS_API_KEY); never commit it.
  */
 
 /**
