@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/Switch-org/analytics-tracker/compare/v4.2.0...v4.3.0) (2026-01-30)
+
+
+### Features
+
+* updated api_key flow for consumers ([#35](https://github.com/Switch-org/analytics-tracker/issues/35)) ([b5ce7de](https://github.com/Switch-org/analytics-tracker/commit/b5ce7de0201b69f085faf0c003427a961a4ec471))
+
 # [4.2.0](https://github.com/Switch-org/analytics-tracker/compare/v4.1.2...v4.2.0) (2026-01-21)
 
 
