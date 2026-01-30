@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/Switch-org/analytics-tracker/compare/v4.4.0...v4.5.0) (2026-01-30)
+
+
+### Features
+
+* updated [IP] for paid ipwhois consumers ([5a952d5](https://github.com/Switch-org/analytics-tracker/commit/5a952d525bc76f44bf4e264261450e511a218d7b))
+
 # [4.4.0](https://github.com/Switch-org/analytics-tracker/compare/v4.3.0...v4.4.0) (2026-01-30)
 
 
