@@ -1,3 +1,10 @@
+# [4.6.0](https://github.com/Switch-org/analytics-tracker/compare/v4.5.0...v4.6.0) (2026-01-30)
+
+
+### Features
+
+* enabled proxy of geo-location ([06b8dd1](https://github.com/Switch-org/analytics-tracker/commit/06b8dd1fb74f2020c6a0d835ad0ce065573b1af2))
+
 # [4.5.0](https://github.com/Switch-org/analytics-tracker/compare/v4.4.0...v4.5.0) (2026-01-30)
 
 
