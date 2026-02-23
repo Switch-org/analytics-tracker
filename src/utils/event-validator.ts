@@ -129,12 +129,7 @@ export function extractRequiredFields(event: AnalyticsEvent): RequiredEventField
  * Returns true if valid, false if should be filtered out
  */
 export function validateRequiredFields(fields: RequiredEventFields): boolean {
-  // Must have at least one of: IP, or (lat AND lon)
-  const hasLocation = fields.ip || (fields.lat !== null && fields.lon !== null);
-  if (!hasLocation) {
-    return false;
-  }
-  
+  // Location (IP or lat/lon) is optional — allows localhost and dev where IP may be null
   // Must have session (non-empty string, not 'unknown')
   if (!fields.session || fields.session === 'unknown' || fields.session.trim() === '') {
     return false;

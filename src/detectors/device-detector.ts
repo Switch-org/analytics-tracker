@@ -79,11 +79,18 @@ export class DeviceDetector {
       } else {
         model = 'iOS Device';
       }
-    } else if (/Mac OS X/i.test(ua)) {
+    } else if (/Macintosh|Mac OS X/i.test(ua)) {
       platform = 'macOS';
       const m = ua.match(/Mac OS X\s(\d+[._]\d+(?:[._]\d+)?)/);
       platformVersion = m ? m[1].replace(/_/g, '.') : 'Unknown';
-      model = 'Mac';
+      // Prefer specific model from UA when present (Safari often includes it)
+      if (/MacBookPro/i.test(ua)) model = 'MacBook Pro';
+      else if (/MacBookAir/i.test(ua)) model = 'MacBook Air';
+      else if (/MacBook/i.test(ua)) model = 'MacBook';
+      else if (/iMac/i.test(ua)) model = 'iMac';
+      else if (/Mac\s*Pro|MacPro/i.test(ua)) model = 'Mac Pro';
+      else if (/Mac\s*mini|MacMini/i.test(ua)) model = 'Mac mini';
+      else model = 'Mac';
     } else if (/Windows NT/i.test(ua)) {
       platform = 'Windows';
       if (/Windows NT 10\.0/i.test(ua)) platformVersion = '10/11';
@@ -222,8 +229,13 @@ export class DeviceDetector {
       }
     }
 
-    if (deviceModel === 'Unknown') {
-      deviceModel = brand;
+    if (deviceModel === 'Unknown' || deviceModel === brand) {
+      // Avoid "Apple Apple": for desktop Mac use "Mac" or keep real.model if already set (e.g. MacBook Pro)
+      if (type === 'desktop' && brand === 'Apple' && /Macintosh|Mac OS X/i.test(ua)) {
+        deviceModel = real.model !== 'Unknown' ? real.model : 'Mac';
+      } else if (deviceModel === 'Unknown') {
+        deviceModel = brand;
+      }
     }
 
     // CPU architecture
