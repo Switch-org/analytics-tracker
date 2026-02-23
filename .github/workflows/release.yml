@@ -93,8 +93,25 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # Test npm authentication
-          NPM_USER=$(npm whoami 2>&1) || (echo "❌ npm authentication failed!" && echo "Check:" && echo "1. NPM_TOKEN is set in GitHub Secrets" && echo "2. Token has publish permissions" && echo "3. Token is valid and not expired" && exit 1)
+          echo "🔐 Testing npm authentication..."
+          NPM_WHOAMI_OUT=$(npm whoami 2>&1) || true
+          NPM_EXIT=$?
+          if [ $NPM_EXIT -ne 0 ]; then
+            echo "❌ npm authentication failed!"
+            echo ""
+            echo "npm output: $NPM_WHOAMI_OUT"
+            echo ""
+            echo "Fix:"
+            echo "1. Create an npm Automation token: https://www.npmjs.com/settings/~/tokens → Generate New Token → Automation"
+            echo "2. Copy the token (starts with npm_)"
+            echo "3. GitHub repo → Settings → Secrets and variables → Actions → New repository secret"
+            echo "4. Name: NPM_TOKEN (exact). Value: paste the token. Add secret."
+            echo "5. If the token exists: regenerate it (old one may be expired) and update the NPM_TOKEN secret."
+            echo ""
+            echo "Token must be type Automation (not Classic) and have publish access."
+            exit 1
+          fi
+          NPM_USER="$NPM_WHOAMI_OUT"
           echo "✅ npm authentication successful"
           echo "📦 Logged in as: $NPM_USER"
           
