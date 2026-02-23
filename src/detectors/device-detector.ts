@@ -78,7 +78,7 @@ export class DeviceDetector {
         }
       } else {
         model = 'iOS Device';
-      }
+      } 
     } else if (/Macintosh|Mac OS X/i.test(ua)) {
       platform = 'macOS';
       const m = ua.match(/Mac OS X\s(\d+[._]\d+(?:[._]\d+)?)/);
