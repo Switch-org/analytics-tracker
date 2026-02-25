@@ -1,3 +1,10 @@
+# [4.7.0](https://github.com/Switch-org/analytics-tracker/compare/v4.6.0...v4.7.0) (2026-02-25)
+
+
+### Features
+
+* updated device detection ([64dd93c](https://github.com/Switch-org/analytics-tracker/commit/64dd93c0801dc4fd046517f8d30b345f4647db83))
+
 # [4.6.0](https://github.com/Switch-org/analytics-tracker/compare/v4.5.0...v4.6.0) (2026-01-30)
 
 
