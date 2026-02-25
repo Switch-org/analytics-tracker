@@ -94,6 +94,12 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          # Use ~/.npmrc so we're not affected by setup-node's NPM_CONFIG_USERCONFIG
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          npm config set registry https://registry.npmjs.org/
+          chmod 600 ~/.npmrc
+          unset NPM_CONFIG_USERCONFIG
+
           echo "🔐 Testing npm authentication..."
           NPM_WHOAMI_OUT=$(npm whoami 2>&1) || true
           NPM_EXIT=$?
@@ -140,7 +146,12 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # Auth already configured by Setup Node + Configure npm steps
+          # Force npm to use ~/.npmrc with our token (override setup-node's NPM_CONFIG_USERCONFIG)
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          npm config set registry https://registry.npmjs.org/
+          chmod 600 ~/.npmrc
+          unset NPM_CONFIG_USERCONFIG
+
           PACKAGE_NAME="user-analytics-tracker"
           echo "📦 Checking access to package: $PACKAGE_NAME"
 
