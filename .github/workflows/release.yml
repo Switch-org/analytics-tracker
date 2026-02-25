@@ -139,11 +139,16 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          # Ensure npm auth is available in this step (avoid 401 from stale/missing .npmrc)
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          npm config set registry https://registry.npmjs.org/
+          chmod 600 ~/.npmrc
+
           PACKAGE_NAME="user-analytics-tracker"
           NPM_USER=$(npm whoami)
           echo "📦 Checking access to package: $PACKAGE_NAME"
           echo "👤 npm user: $NPM_USER"
-          
+
           # Check if package exists
           if npm view $PACKAGE_NAME version > /dev/null 2>&1; then
             echo "✅ Package exists"
