@@ -126,10 +126,10 @@ export function extractRequiredFields(event: AnalyticsEvent): RequiredEventField
 
 /**
  * Validate that event has minimum required fields
- * Returns true if valid, false if should be filtered out
+ * Returns true if valid, false if should be filtered out.
+ * IP/location are optional (localhost/dev). Device info is optional so we store even when missing.
  */
 export function validateRequiredFields(fields: RequiredEventFields): boolean {
-  // Location (IP or lat/lon) is optional — allows localhost and dev where IP may be null
   // Must have session (non-empty string, not 'unknown')
   if (!fields.session || fields.session === 'unknown' || fields.session.trim() === '') {
     return false;
@@ -155,32 +155,18 @@ export function validateRequiredFields(fields: RequiredEventFields): boolean {
     return false;
   }
   
-  // Must have at least one of: mobile, OS, or browser
-  const hasDeviceInfo = fields.mobile !== null || fields.os || fields.browser;
-  if (!hasDeviceInfo) {
-    return false;
-  }
-  
+  // Device info (mobile, os, browser) is optional - store event even when missing
   return true;
 }
 
 /**
  * Check if event has null values for critical fields
- * Returns true if should be filtered out (too many nulls)
+ * Returns true if should be filtered out (too many nulls).
+ * Disabled: we store events regardless of null ip/location so localhost and dev are accepted.
  */
-export function hasTooManyNulls(fields: RequiredEventFields): boolean {
-  // Only count non-critical fields for null percentage
-  // Critical fields (ip, lat, lon, session, pageUrl, eventType, eventId, timestamp) are already validated
-  const nonCriticalFields = ['mobile', 'location', 'msisdn', 'operators', 'page', 'companyName', 'gps', 'os', 'browser', 'serviceId'];
-  const nullCount = nonCriticalFields.filter(key => {
-    const value = fields[key as keyof RequiredEventFields];
-    return value === null || value === undefined;
-  }).length;
-  const totalNonCritical = nonCriticalFields.length;
-  const nullPercentage = totalNonCritical > 0 ? nullCount / totalNonCritical : 0;
-  
-  // Filter out if more than 70% of non-critical fields are null (more lenient)
-  return nullPercentage > 0.7;
+export function hasTooManyNulls(_fields: RequiredEventFields): boolean {
+  // Never filter based on null count - store events even when ip/location/etc are null
+  return false;
 }
 
 /**
