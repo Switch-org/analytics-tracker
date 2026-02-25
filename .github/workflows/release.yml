@@ -50,6 +50,9 @@ jobs:
         with:
           node-version: '22.x'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: |
@@ -81,12 +84,10 @@ jobs:
             echo "Please go to Settings → Secrets and variables → Actions and add NPM_TOKEN"
             exit 1
           fi
-          
-          # Configure npm authentication
+          # setup-node with registry-url already wrote .npmrc; ensure it's present and correct
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
           npm config set registry https://registry.npmjs.org/
           chmod 600 ~/.npmrc
-          
           echo "✅ npm authentication configured"
 
       - name: Verify npm authentication
@@ -139,14 +140,25 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # Ensure npm auth is available in this step (avoid 401 from stale/missing .npmrc)
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          npm config set registry https://registry.npmjs.org/
-          chmod 600 ~/.npmrc
-
+          # Auth already configured by Setup Node + Configure npm steps
           PACKAGE_NAME="user-analytics-tracker"
-          NPM_USER=$(npm whoami)
           echo "📦 Checking access to package: $PACKAGE_NAME"
+
+          NPM_USER=$(npm whoami 2>&1) || true
+          if [ -z "$NPM_USER" ] || [[ "$NPM_USER" == *"Unauthorized"* ]] || [[ "$NPM_USER" == *"401"* ]]; then
+            echo "❌ npm whoami failed (401 Unauthorized)"
+            echo ""
+            echo "Your NPM_TOKEN is invalid, expired, or the wrong type. Do this:"
+            echo "1. Go to https://www.npmjs.com/settings/~/tokens"
+            echo "2. Generate New Token → choose type 'Automation' (required for CI)"
+            echo "3. Copy the token (it starts with npm_)"
+            echo "4. GitHub repo → Settings → Secrets and variables → Actions"
+            echo "5. Add or update secret: name NPM_TOKEN, value = the token (no quotes/spaces)"
+            echo ""
+            echo "Do NOT use a 'Classic' token or a token type other than Automation."
+            exit 1
+          fi
+
           echo "👤 npm user: $NPM_USER"
 
           # Check if package exists
