@@ -101,7 +101,7 @@ jobs:
           unset NPM_CONFIG_USERCONFIG
 
           echo "🔐 Testing npm authentication..."
-          NPM_WHOAMI_OUT=$(npm whoami 2>&1) || true
+          NPM_WHOAMI_OUT=$(npm whoami 2>&1) || true 
           NPM_EXIT=$?
           if [ $NPM_EXIT -ne 0 ]; then
             echo "❌ npm authentication failed!"
