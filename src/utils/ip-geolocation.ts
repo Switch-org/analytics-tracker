@@ -49,6 +49,18 @@ export interface IPGeolocationConfig {
   proxyUrl?: string;
 }
 
+/** Normalize latitude/longitude from API response (top-level or nested, number or string). Paid APIs may use different shapes. */
+function normalizeLatLon(data: any): { lat: number | undefined; lon: number | undefined } {
+  const num = (v: unknown): number | undefined => {
+    if (v == null || v === '') return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
+  };
+  const lat = num(data?.latitude ?? data?.lat ?? data?.location?.latitude ?? data?.location?.lat) ?? undefined;
+  const lon = num(data?.longitude ?? data?.lon ?? data?.location?.longitude ?? data?.location?.lon) ?? undefined;
+  return { lat, lon };
+}
+
 /**
  * Get complete IP location data from ipwho.is API (HIGH PRIORITY)
  * This is the primary method - gets IP, location, connection, and all data in one call
@@ -142,12 +154,15 @@ export async function getCompleteIPLocation(config?: IPGeolocationConfig): Promi
       }, {} as Record<string, any>),
     };
 
-    // Add backward compatibility mappings for existing code
-    if (data.latitude !== undefined) {
-      locationData.lat = data.latitude;
+    // Normalize lat/lon from any shape (top-level or nested, number or string) for paid APIs like ipwhois.pro
+    const { lat: normLat, lon: normLon } = normalizeLatLon(data);
+    if (normLat !== undefined) {
+      locationData.lat = normLat;
+      locationData.latitude = normLat;
     }
-    if (data.longitude !== undefined) {
-      locationData.lon = data.longitude;
+    if (normLon !== undefined) {
+      locationData.lon = normLon;
+      locationData.longitude = normLon;
     }
     if (data.country_code !== undefined) {
       locationData.countryCode = data.country_code;
@@ -343,12 +358,15 @@ export async function getIPLocation(ip: string, config?: IPGeolocationConfig): P
       }, {} as Record<string, any>),
     };
 
-    // Add backward compatibility mappings for existing code
-    if (data.latitude !== undefined) {
-      locationData.lat = data.latitude;
+    // Normalize lat/lon from any shape (top-level or nested, number or string) for paid APIs like ipwhois.pro
+    const { lat: normLat, lon: normLon } = normalizeLatLon(data);
+    if (normLat !== undefined) {
+      locationData.lat = normLat;
+      locationData.latitude = normLat;
     }
-    if (data.longitude !== undefined) {
-      locationData.lon = data.longitude;
+    if (normLon !== undefined) {
+      locationData.lon = normLon;
+      locationData.longitude = normLon;
     }
     if (data.country_code !== undefined) {
       locationData.countryCode = data.country_code;
